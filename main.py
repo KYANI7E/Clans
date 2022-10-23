@@ -75,7 +75,7 @@ war.saveFile(file)
 raid = scriv.Scriv(file, tags)
 raid.setUpMembers(clanDataRaid)
 
-raid.setUpRaidColumnHeaders(2,3,4,5,6,7,8,9,5,6,7)
+raid.setUpRaidColumnHeaders(1,2,3,4,5,6,7,8,9,5,6,7)
 raid.setUpRaids(raidData)
 raid.updateRiadsSheet()
 raid.saveFile(file)

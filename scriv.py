@@ -4,7 +4,7 @@ from http.client import NETWORK_AUTHENTICATION_REQUIRED
 from timeit import repeat
 from openpyxl import load_workbook
 from openpyxl import Workbook
-from openpyxl.styles import PatternFill , numbers, Font, Border
+from openpyxl.styles import PatternFill , numbers, Font, Border, Alignment
 from openpyxl.utils import get_column_letter
 from openpyxl.styles.borders import Border, Side
 
@@ -80,11 +80,12 @@ class Scriv():
         self.warSheetSetUp()
         
 
-    def setUpRaidColumnHeaders(self, tag, trophies, name, attacks, stars, dono, donoR, repeat,
+    def setUpRaidColumnHeaders(self, tag, trophies, position, name, attacks, stars, dono, donoR, repeat,
      date, totalGold, totalDono):
         print("Setting up raid sheet...")
         self.tagPosR = tag
         self.trophiesPosR = trophies
+        self.positionPosR = position
         self.namePosR = name
         self.attacksPosR = attacks
         self.goldPosR = stars
@@ -295,8 +296,12 @@ class Scriv():
         #                     right=Side(style='thin'), 
         #                     top=Side(style='thin'), 
         #                     bottom=Side(style='thin'))
+        
+
+        self.capital.column_dimensions['C'].width = 5
         for r,m in enumerate(tags,4):
             points = -1
+            self.writeRank(r, self.capital)
             self.writeCell(self.clanMembers[m], r, self.tagPosR, 'tag', self.capital, tag=True)
             self.writeCell(self.clanMembers[m], r, self.trophiesPosR, 'trophies', self.capital)
             self.writeCell(self.clanMembers[m], r, self.namePosR, 'name', self.capital)
@@ -309,6 +314,16 @@ class Scriv():
                 c = (((i+1)*2)+(self.repeatPosR-2))
                 self.writeCell(self.clanMembers[m], r,c, d, self.capital, params=[5,3], dated = 0)
                 self.writeCell(self.clanMembers[m], r,c+1, d, self.capital, params=[8000,6000], dated = 1)
+
+    def writeRank(self, r, sheet):
+        thin_border = Border(bottom=Side(style='thin'))
+        sheet.cell(r, self.positionPosR).value = r - 3
+        sheet.cell(r, self.positionPosR).alignment = Alignment(horizontal='center')
+        self.colorSet(self.gray, self.gray2, r, self.positionPosR, self.capital)
+        # self.capital.cell(r, self.positionPosR).border = thin_border
+        if (r-3) % 10 == 0:
+            self.capital.cell(r, self.positionPosR).border = thin_border
+
 
     def updateRaidVals(self):
         self.capital.cell(2, self.totalGoldR).value = self.totalGold
@@ -400,14 +415,17 @@ class Scriv():
             self.colorSet(self.red, self.red2, r, c, sheet)
 
     def writeCell(self, member, r, c, val, sheet, params=None, tag=False, dated=-1):
-        thin_border = Border(left=Side(style='thick'))
+        thin_border = Border(bottom=Side(style='thin'))
         if member['tag'] in self.tags:
             # sheet.cell(r, c).border = thin_border
             sheet.cell(r, c).font = Font(bold=True)
 
-        # else:
-        sheet.cell(r, c).font = Font(bold=False)
+        else:
+            sheet.cell(r, c).font = Font(bold=False)
         sheet.cell(r, c).border = None
+
+        if (r-3) % 10 == 0:
+            sheet.cell(r, c).border = thin_border
 
 
         if tag == True:

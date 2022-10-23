@@ -1,10 +1,12 @@
 import enum
 from functools import update_wrapper
+from http.client import NETWORK_AUTHENTICATION_REQUIRED
 from timeit import repeat
 from openpyxl import load_workbook
 from openpyxl import Workbook
-from openpyxl.styles import PatternFill , numbers
+from openpyxl.styles import PatternFill , numbers, Font, Border
 from openpyxl.utils import get_column_letter
+from openpyxl.styles.borders import Border, Side
 
 class Scriv():
     def saveFile(self, fileName):
@@ -17,11 +19,13 @@ class Scriv():
 
         self.wb.save(fileName)
 
-    def __init__(self, fileName):
+    def __init__(self, fileName, tags):
         self.raidDates = []
         self.raidTime = ""
         self.warDates = []
         self.warTime = ""
+
+        self.tags = tags
 
         self.clanData = {}
         self.clanMembers = {}
@@ -131,25 +135,23 @@ class Scriv():
 
         warD = warData['preparationStartTime'][0:8]
         self.warTime = warD[0:4] + "-" + warD[4:6] + "-" + warD[6:8]
+        newInfo = False
 
 
         if not self.warTime == str(self.war.cell(2, self.datePosW).value)[:10] and not self.war.cell(2, self.datePosW).value == None:
             self.warDates.append(str(self.war.cell(2, self.datePosW).value)[:10])
-        
+            newInfo = True
+
+
         for c in range(self.repeatPosW, colMax+1, 2):
             self.warDates.append(str(self.war.cell(2, c).value))
 
         for r in range(4, rowMax+1):
             tag = self.war.cell(r, self.tagPosW).value
-            try:
-                if len(self.warDates) > 0:
-                    self.clanMembers[tag][self.warDates[0]] = [
-                        self.war.cell(r, self.attacksPosW).value,
-                        self.war.cell(r, self.starsPosW).value
-                    ]
-            except:
+            
+            if not tag in self.clanMembers:
                 self.clanMembers[tag] = {}
-                if len(self.warDates) > 0:
+                if newInfo:
                     self.clanMembers[tag][self.warDates[0]] = [
                         self.war.cell(r, self.attacksPosW).value,
                         self.war.cell(r, self.starsPosW).value
@@ -161,10 +163,15 @@ class Scriv():
                 self.clanMembers[tag]['attackNumber'] = None
                 self.clanMembers[tag]['stars'] = None
                 self.clanMembers[tag]['mapPosition'] = None
-
+            else:
+                if newInfo:
+                    self.clanMembers[tag][self.warDates[0]] = [
+                        self.war.cell(r, self.attacksPosW).value,
+                        self.war.cell(r, self.starsPosW).value
+                    ]
                 
             for c in range(self.repeatPosW, colMax+1, 2):
-                date = self.war.cell(2, c).value
+                date = self.war.cell(1, c).value
                 self.clanMembers[tag][date] = [
                     self.war.cell(r, c).value,
                     self.war.cell(r, c+1).value
@@ -213,29 +220,26 @@ class Scriv():
         self.raidGolds = []
         self.averages = []
         self.medals = []
+        newInfo = False
 
-        if not self.raidTime == str(self.capital.cell(2, self.datePosR).value)[:10] and not self.capital.cell(2, self.datePosR).value == None:
+        if not self.raidTime == str(self.capital.cell(1, self.datePosR).value)[:10] and not self.capital.cell(1, self.datePosR).value == None:
             self.raidDates.append(str(self.capital.cell(1, self.datePosR).value)[:10])
             self.averages.append(self.capital.cell(2, self.datePosR).value)
             self.raidGolds.append(self.capital.cell(2, self.totalGoldR).value)
             self.medals.append(self.capital.cell(1, self.totalGoldR).value)
             self.capital.cell(1, self.totalGoldR).value = "(Medals)"
+            newInfo = True
 
         for c in range(self.repeatPosR, colMax+1, 2):
             self.raidDates.append(str(self.capital.cell(1, c).value))
-            self.averages.append(str(self.capital.cell(2, c).value))
+            self.averages.append(self.capital.cell(2, c).value)
             self.raidGolds.append(self.capital.cell(2, c+1).value)
             self.medals.append(self.capital.cell(1, c+1).value)
 
         for r in range(4, rowMax+1):
             tag = self.capital.cell(r, self.tagPosR).value
-            try:
-                if len(self.raidDates) > 0:
-                    self.clanMembers[tag][self.raidDates[0]] = [
-                        self.capital.cell(r, self.attacksPosR).value,
-                        self.capital.cell(r, self.goldPosR).value
-                    ]
-            except:
+
+            if not tag in self.clanMembers:
                 self.clanMembers[tag] = {}
                 self.clanMembers[tag]['tag'] = self.capital.cell(r, self.tagPosR).value
                 self.clanMembers[tag]['name'] = self.capital.cell(r, self.namePosR).value
@@ -246,14 +250,20 @@ class Scriv():
                 self.clanMembers[tag]['donations'] = 0
                 self.clanMembers[tag]['donationsReceived'] = 0
                 self.clanMembers[tag]['trophies'] = self.capital.cell(r, self.trophiesPosR).value
-                if len(self.raidDates) > 0:
+                if newInfo:
+                    self.clanMembers[tag][self.raidDates[0]] = [
+                        self.capital.cell(r, self.attacksPosR).value,
+                        self.capital.cell(r, self.goldPosR).value
+                    ]
+            else:
+                if newInfo:
                     self.clanMembers[tag][self.raidDates[0]] = [
                         self.capital.cell(r, self.attacksPosR).value,
                         self.capital.cell(r, self.goldPosR).value
                     ]
 
             for c in range(self.repeatPosR, colMax+1, 2):
-                date = self.capital.cell(2, c).value
+                date = self.capital.cell(1, c).value
                 self.clanMembers[tag][date] = [
                     self.capital.cell(r, c).value,
                     self.capital.cell(r, c+1).value
@@ -281,7 +291,10 @@ class Scriv():
         self.updateRaidVals()
 
         tags = self.sortGold(self.clanMembers)
-
+        # thin_border = Border(left=Side(style='thin'), 
+        #                     right=Side(style='thin'), 
+        #                     top=Side(style='thin'), 
+        #                     bottom=Side(style='thin'))
         for r,m in enumerate(tags,4):
             points = -1
             self.writeCell(self.clanMembers[m], r, self.tagPosR, 'tag', self.capital, tag=True)
@@ -387,8 +400,22 @@ class Scriv():
             self.colorSet(self.red, self.red2, r, c, sheet)
 
     def writeCell(self, member, r, c, val, sheet, params=None, tag=False, dated=-1):
+        thin_border = Border(left=Side(style='thick'))
+        if member['tag'] in self.tags:
+            # sheet.cell(r, c).border = thin_border
+            sheet.cell(r, c).font = Font(bold=True)
+
+        # else:
+        sheet.cell(r, c).font = Font(bold=False)
+        sheet.cell(r, c).border = None
+
+
         if tag == True:
             sheet.cell(r, c).value = member[val]
+            if member[val] in self.tags:
+                sheet.cell(r, c).font = Font(bold=True)
+            else:
+                sheet.cell(r, c).font = Font(bold=False)
             if member['status'] == 'In':
                 self.colorSet(self.gray, self.gray2, r, c, sheet)
             else:

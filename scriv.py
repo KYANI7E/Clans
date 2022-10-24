@@ -30,7 +30,13 @@ class Scriv():
         self.clanData = {}
         self.clanMembers = {}
 
+        self.outFlag = True
+        self.notAttackedFlag = True
+
         self.numFormat = u'#,##0;'
+
+        self.thin_border = Border(top=Side(style='thin', color='454545'))
+        self.thickBorder = Border(top=Side(style='thick'))
 
         self.no_fill = PatternFill(fill_type=None)
         self.red = PatternFill(fgColor='FFCCCB',
@@ -297,10 +303,14 @@ class Scriv():
         #                     top=Side(style='thin'), 
         #                     bottom=Side(style='thin'))
         
+        
 
         self.capital.column_dimensions['C'].width = 5
         for r,m in enumerate(tags,4):
             points = -1
+
+
+
             self.writeRank(r, self.capital)
             self.writeCell(self.clanMembers[m], r, self.tagPosR, 'tag', self.capital, tag=True)
             self.writeCell(self.clanMembers[m], r, self.trophiesPosR, 'trophies', self.capital)
@@ -314,16 +324,29 @@ class Scriv():
                 c = (((i+1)*2)+(self.repeatPosR-2))
                 self.writeCell(self.clanMembers[m], r,c, d, self.capital, params=[5,3], dated = 0)
                 self.writeCell(self.clanMembers[m], r,c+1, d, self.capital, params=[8000,6000], dated = 1)
+            
+            if self.clanMembers[m]['attacks'] == 0 and self.notAttackedFlag:
+                self.lines(r, self.capital)
+                self.notAttackedFlag = False
+
+            if self.clanMembers[m]['status'] == 'Out' and self.outFlag:
+                self.lines(r, self.capital)
+                self.outFlag = False
+
 
     def writeRank(self, r, sheet):
-        thin_border = Border(bottom=Side(style='thin'))
         sheet.cell(r, self.positionPosR).value = r - 3
         sheet.cell(r, self.positionPosR).alignment = Alignment(horizontal='center')
         self.colorSet(self.gray, self.gray2, r, self.positionPosR, self.capital)
         # self.capital.cell(r, self.positionPosR).border = thin_border
-        if (r-3) % 10 == 0:
-            self.capital.cell(r, self.positionPosR).border = thin_border
+        # if (r-3) % 10 == 0:
+        #     self.capital.cell(r, self.positionPosR).border = self.thin_border
 
+    def lines(self, r, sheet):
+
+        colMax = self.capital.max_column
+        for c in range(1, colMax+1):
+            sheet.cell(r, c).border = self.thickBorder
 
     def updateRaidVals(self):
         self.capital.cell(2, self.totalGoldR).value = self.totalGold
@@ -415,7 +438,6 @@ class Scriv():
             self.colorSet(self.red, self.red2, r, c, sheet)
 
     def writeCell(self, member, r, c, val, sheet, params=None, tag=False, dated=-1):
-        thin_border = Border(bottom=Side(style='thin'))
         if member['tag'] in self.tags:
             # sheet.cell(r, c).border = thin_border
             sheet.cell(r, c).font = Font(bold=True)
@@ -424,9 +446,8 @@ class Scriv():
             sheet.cell(r, c).font = Font(bold=False)
         sheet.cell(r, c).border = None
 
-        if (r-3) % 10 == 0:
-            sheet.cell(r, c).border = thin_border
-
+        # if (r-3) % 11 == 0:
+        #     sheet.cell(r, c).border = self.thin_border
 
         if tag == True:
             sheet.cell(r, c).value = member[val]

@@ -178,7 +178,7 @@ class Scriv():
                     ]
                 
             for c in range(self.repeatPosW, colMax+1, 2):
-                date = self.war.cell(1, c).value
+                date = self.war.cell(2, c).value
                 self.clanMembers[tag][date] = [
                     self.war.cell(r, c).value,
                     self.war.cell(r, c+1).value

@@ -9,9 +9,10 @@ from openpyxl.utils import get_column_letter
 from openpyxl.styles.borders import Border, Side
 import logging
 
-
 class Scriv():
     def saveFile(self, fileName):
+        logging.info("Saving file {}".format(fileName))
+
         print("Saving file...")
         for i in range(1, self.war.max_column + 1):
             self.war.column_dimensions[get_column_letter(i)].auto_size = True
@@ -65,6 +66,8 @@ class Scriv():
             self.wb = load_workbook(fileName)
         except:
             self.wb = Workbook()
+            logging.info("Creating new work book")
+
 
         try:
             self.capital = self.wb['Raids']
@@ -298,7 +301,7 @@ class Scriv():
             self.clanMembers[m['tag']]['attacks'] = m['attacks']
             self.clanMembers[m['tag']]['capitalResourcesLooted'] = m['capitalResourcesLooted']
 
-    def updateRiadsSheet(self):
+    def updateRiadsSheet(self, goldThreshold, attackThreshold, donationsThreshold, totalThreshold):
         print("Updating raid sheet...")
         self.updateRaidVals()
 
@@ -332,11 +335,11 @@ class Scriv():
             self.writeCell(self.clanMembers[m], r, self.tagPosR, 'tag', self.capital, tag=True)
             self.writeCell(self.clanMembers[m], r, self.trophiesPosR, 'trophies', self.capital)
             self.writeCell(self.clanMembers[m], r, self.namePosR, 'name', self.capital)
-            points += self.writeCell(self.clanMembers[m], r, self.attacksPosR, 'attacks', self.capital, params=[5,3])
-            points += self.writeCell(self.clanMembers[m], r, self.goldPosR, 'capitalResourcesLooted', self.capital, params=[8000,6000])
-            self.writeCell(self.clanMembers[m], r, self.donationPosR, 'donations', self.capital, params=[300,100])
+            points += self.writeCell(self.clanMembers[m], r, self.attacksPosR, 'attacks', self.capital, params=attackThreshold)
+            points += self.writeCell(self.clanMembers[m], r, self.goldPosR, 'capitalResourcesLooted', self.capital, params=goldThreshold)
+            self.writeCell(self.clanMembers[m], r, self.donationPosR, 'donations', self.capital, params=donationsThreshold)
             self.writeCell(self.clanMembers[m], r, self.donationRecievedR, 'donationsReceived', self.capital)
-            self.colorName(r, self.namePosR, points, [4,2], self.capital)
+            self.colorName(r, self.namePosR, points, totalThreshold, self.capital)
 
             if  self.outFlag == 1 or self.notAttackedFlag == 1:
                 self.capital.cell(r, self.donationRecievedR).border = self.topNSideBorder
@@ -352,8 +355,8 @@ class Scriv():
             
             for i, d in enumerate(self.raidDates):
                 c = (((i+1)*2)+(self.repeatPosR-2))
-                self.writeCell(self.clanMembers[m], r,c, d, self.capital, params=[5,3], dated = 0)
-                self.writeCell(self.clanMembers[m], r,c+1, d, self.capital, params=[8000,6000], dated = 1)
+                self.writeCell(self.clanMembers[m], r,c, d, self.capital, params=attackThreshold, dated = 0)
+                self.writeCell(self.clanMembers[m], r,c+1, d, self.capital, params=goldThreshold, dated = 1)
                 if  self.outFlag == 1 or self.notAttackedFlag == 1:
                     self.capital.cell(r, c+1).border = self.topNSideBorder
                 else:
@@ -432,7 +435,7 @@ class Scriv():
 
         return temp + trash
 
-    def updateWarSheet(self):
+    def updateWarSheet(self, attackThreshold, starsThreshold, totalThrshold):
         print("Updating war sheet")
         self.updateWarTimes()
 
@@ -443,15 +446,15 @@ class Scriv():
             self.writeCell(self.clanMembers[m], r, self.tagPosW, 'tag', self.war, tag=True)
             self.writeCell(self.clanMembers[m], r, self.mapPositionW, 'mapPosition', self.war)
             self.writeCell(self.clanMembers[m], r, self.namePosW, 'name', self.war)
-            points += self.writeCell(self.clanMembers[m], r, self.attacksPosW, 'attackNumber', self.war, params=[2,1])
-            points += self.writeCell(self.clanMembers[m], r, self.starsPosW, 'stars', self.war, params=[6,4])
-            self.colorName(r, self.namePosW, points, [4,2], self.war)
+            points += self.writeCell(self.clanMembers[m], r, self.attacksPosW, 'attackNumber', self.war, params=attackThreshold)
+            points += self.writeCell(self.clanMembers[m], r, self.starsPosW, 'stars', self.war, params=starsThreshold)
+            self.colorName(r, self.namePosW, points, totalThrshold, self.war)
             self.war.cell(r, self.starsPosW).border = self.sideBorder
 
             for i, d in enumerate(self.warDates):
                 c = (((i+1)*2)+(self.repeatPosW-2))
-                self.writeCell(self.clanMembers[m], r,c, d, self.war, params=[2,1], dated = 0)
-                self.writeCell(self.clanMembers[m], r,c+1, d, self.war, params=[6,4], dated = 1)
+                self.writeCell(self.clanMembers[m], r,c, d, self.war, params=attackThreshold, dated = 0)
+                self.writeCell(self.clanMembers[m], r,c+1, d, self.war, params=starsThreshold, dated = 1)
                 self.war.cell(r, c+1).border = self.sideBorder
 
 

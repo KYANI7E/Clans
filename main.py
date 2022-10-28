@@ -8,8 +8,21 @@ import sys
 import copy
 import logging
 
-logging.basicConfig(filename="clash.log", level=logging.INFO, format="%(asctime)s:%(message)s")
-logging.info("Started main.py")
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename="clash.log", level=logging.INFO, format="%(asctime)s :: %(name)s :: %(message)s")
+logging.info("Started")
+
+# logging.basicConfig(filename='example.log', filemode='w', level=logging.DEBUG)
+
+def handle_unhandled_exception(exc_type, exc_value, exc_traceback):
+    """Handler for unhandled exceptions that will write to the logs"""
+    if issubclass(exc_type, KeyboardInterrupt):
+        # call the default excepthook saved at __excepthook__
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+    logger.critical("Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+sys.excepthook = handle_unhandled_exception
 
 print("Start")
 try:
@@ -81,7 +94,7 @@ war.setUpMembers(clanDataWar)
 
 war.setUpWarColumnHeaders(2, 3, 4, 5, 6, 7, 5)
 war.setUpWar(warData)
-war.updateWarSheet()
+war.updateWarSheet(config['warAttacks'], config['stars'], config['warTotal'])
 war.saveFile(file)
 
 
@@ -90,7 +103,7 @@ raid.setUpMembers(clanDataRaid)
 
 raid.setUpRaidColumnHeaders(1,2,3,4,5,6,7,8,9,5,6,7)
 raid.setUpRaids(raidData)
-raid.updateRiadsSheet()
+raid.updateRiadsSheet(config['gold'], config['raidAttacks'], config['donations'], config['raidTotal'])
 raid.saveFile(file)
 
-logging.info("Finsihed main.py")
+logging.info("Exited")

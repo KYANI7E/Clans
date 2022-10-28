@@ -18,5 +18,17 @@
         "#Q8CLCUCC2",
         "#QLJ2U20Y2",
         "#YRGRRJQCY"
-    ]
+    ],
+    
+    "gold": [6000, 4000],
+    "raidAttacks": [5, 3],
+    "raidTotal": [4, 3],
+
+    "stars": [4, 3],
+    "warAttacks": [2,1],
+    "warTotal": [5, 3],
+
+    "donations": [450, 100]
+
+
 }

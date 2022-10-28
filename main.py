@@ -6,7 +6,11 @@ import os
 import json
 import sys
 import copy
- 
+import logging
+
+logging.basicConfig(filename="clash.log", level=logging.INFO, format="%(asctime)s:%(message)s")
+logging.info("Started main.py")
+
 print("Start")
 try:
     configPath = "\\".join(sys.argv[0].split("\\")[:-1])
@@ -45,17 +49,26 @@ flag = False
 if not statusCode == 200:
     print("Could not fetch clan data")
     print(clanData)
+    logging.critical("Could not fetch clan data. status Code {}".format(statusCode))
+    logging.critical(clanData)
     flag = True
+    
 if not statusCodeW == 200:
     print("Could not fetch war data")
     print(warData)
+    logging.critical("Could not fetch war data. Status Code {}".format(statusCodeW))
+    logging.critical(warData)
     flag = True
+
 if not statusCodeR == 200:
     print("Could not fetch raid data")
     print(raidData)
+    logging.critical("Could not fetch raid data. Status Code {}".format(statusCodeR))
+    logging.critical(raidData)
     flag = True
 
 if flag:
+    logging.critical("Exiting script")
     print("Exiting script")
     exit()
 
@@ -80,3 +93,4 @@ raid.setUpRaids(raidData)
 raid.updateRiadsSheet()
 raid.saveFile(file)
 
+logging.info("Finsihed main.py")

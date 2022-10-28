@@ -7,6 +7,8 @@ from openpyxl import Workbook
 from openpyxl.styles import PatternFill , numbers, Font, Border, Alignment
 from openpyxl.utils import get_column_letter
 from openpyxl.styles.borders import Border, Side
+import logging
+
 
 class Scriv():
     def saveFile(self, fileName):
@@ -30,13 +32,16 @@ class Scriv():
         self.clanData = {}
         self.clanMembers = {}
 
-        self.outFlag = True
-        self.notAttackedFlag = True
+        self.outFlag = 0
+        self.notAttackedFlag = 0
 
         self.numFormat = u'#,##0;'
 
         self.thin_border = Border(top=Side(style='thin', color='454545'))
-        self.thickBorder = Border(top=Side(style='thick'))
+        self.topBorder = Border(top=Side(style='thick'))
+        self.topNSideBorder = Border(top=Side(style='thick'), right=Side(style='medium'))
+        self.sideBorder = Border(right=Side(style='medium'))
+
 
         self.no_fill = PatternFill(fill_type=None)
         self.red = PatternFill(fgColor='FFCCCB',
@@ -252,10 +257,10 @@ class Scriv():
                 self.clanMembers[tag]['name'] = self.capital.cell(r, self.namePosR).value
                 # self.clanMembers[tag]['trophies'] = self.capital.cell(r, self.mapPositionW).value
                 self.clanMembers[tag]['status'] = 'Out'
-                self.clanMembers[tag]['attacks'] = 0
-                self.clanMembers[tag]['capitalResourcesLooted'] = 0
-                self.clanMembers[tag]['donations'] = 0
-                self.clanMembers[tag]['donationsReceived'] = 0
+                self.clanMembers[tag]['attacks'] = None
+                self.clanMembers[tag]['capitalResourcesLooted'] = None
+                self.clanMembers[tag]['donations'] = None
+                self.clanMembers[tag]['donationsReceived'] = None
                 self.clanMembers[tag]['trophies'] = self.capital.cell(r, self.trophiesPosR).value
                 if newInfo:
                     self.clanMembers[tag][self.raidDates[0]] = [
@@ -280,10 +285,10 @@ class Scriv():
             for d in self.raidDates:
                 if not d in self.clanMembers[m]:
                     self.clanMembers[m][d] = [None, None]
-                    self.clanMembers[m]['attacks'] = 0
-                    self.clanMembers[m]['capitalResourcesLooted'] = 0
-                    self.clanMembers[m]['donations'] = 0
-                    self.clanMembers[m]['donationsReceived'] = 0
+                    self.clanMembers[m]['attacks'] = None
+                    self.clanMembers[m]['capitalResourcesLooted'] = None
+                    self.clanMembers[m]['donations'] = None
+                    self.clanMembers[m]['donationsReceived'] = None
                     self.clanMembers[m]['status'] = 'In'
                     self.clanMembers[m]['attackNumber'] = None
                     self.clanMembers[m]['stars'] = None
@@ -298,19 +303,31 @@ class Scriv():
         self.updateRaidVals()
 
         tags = self.sortGold(self.clanMembers)
-        # thin_border = Border(left=Side(style='thin'), 
-        #                     right=Side(style='thin'), 
-        #                     top=Side(style='thin'), 
-        #                     bottom=Side(style='thin'))
-        
-        
 
         self.capital.column_dimensions['C'].width = 5
+        self.capital.column_dimensions['G'].width = 7
+        self.capital.column_dimensions['H'].width = 7
         for r,m in enumerate(tags,4):
+            colMax = self.capital.max_column
+            for c in range(1, colMax+1):
+                if self.clanMembers[m]['attacks'] == 0 and self.notAttackedFlag == 0:
+                    self.capital.cell(r, c).border = self.topBorder
+
+                elif self.clanMembers[m]['status'] == 'Out' and self.outFlag == 0:
+                    self.capital.cell(r, c).border = self.topBorder
+
+                else:
+                    self.capital.cell(r, c).border = None
+
+
+            if self.clanMembers[m]['status'] == 'Out' and self.outFlag == 0:
+                self.outFlag = 1
+
+            if self.clanMembers[m]['attacks'] == 0 and self.notAttackedFlag == 0:
+                self.notAttackedFlag = 1
+
+
             points = -1
-
-
-
             self.writeRank(r, self.capital)
             self.writeCell(self.clanMembers[m], r, self.tagPosR, 'tag', self.capital, tag=True)
             self.writeCell(self.clanMembers[m], r, self.trophiesPosR, 'trophies', self.capital)
@@ -320,19 +337,34 @@ class Scriv():
             self.writeCell(self.clanMembers[m], r, self.donationPosR, 'donations', self.capital, params=[300,100])
             self.writeCell(self.clanMembers[m], r, self.donationRecievedR, 'donationsReceived', self.capital)
             self.colorName(r, self.namePosR, points, [4,2], self.capital)
+
+            if  self.outFlag == 1 or self.notAttackedFlag == 1:
+                self.capital.cell(r, self.donationRecievedR).border = self.topNSideBorder
+                self.capital.cell(r, self.goldPosR).border = self.topNSideBorder
+                self.capital.cell(r, self.namePosR).border = self.topNSideBorder
+            else:
+                self.capital.cell(r, self.donationRecievedR).border = self.sideBorder
+                self.capital.cell(r, self.goldPosR).border = self.sideBorder
+                self.capital.cell(r, self.namePosR).border = self.sideBorder
+
+
+            
+            
             for i, d in enumerate(self.raidDates):
                 c = (((i+1)*2)+(self.repeatPosR-2))
                 self.writeCell(self.clanMembers[m], r,c, d, self.capital, params=[5,3], dated = 0)
                 self.writeCell(self.clanMembers[m], r,c+1, d, self.capital, params=[8000,6000], dated = 1)
-            
-            if self.clanMembers[m]['attacks'] == 0 and self.notAttackedFlag:
-                self.lines(r, self.capital)
-                self.notAttackedFlag = False
+                if  self.outFlag == 1 or self.notAttackedFlag == 1:
+                    self.capital.cell(r, c+1).border = self.topNSideBorder
+                else:
+                    self.capital.cell(r, c+1).border = self.sideBorder
 
-            if self.clanMembers[m]['status'] == 'Out' and self.outFlag:
-                self.lines(r, self.capital)
-                self.outFlag = False
 
+            if self.outFlag == 1:
+                self.outFlag = 2
+
+            if self.notAttackedFlag == 1:
+                self.notAttackedFlag = 2
 
     def writeRank(self, r, sheet):
         sheet.cell(r, self.positionPosR).value = r - 3
@@ -341,12 +373,6 @@ class Scriv():
         # self.capital.cell(r, self.positionPosR).border = thin_border
         # if (r-3) % 10 == 0:
         #     self.capital.cell(r, self.positionPosR).border = self.thin_border
-
-    def lines(self, r, sheet):
-
-        colMax = self.capital.max_column
-        for c in range(1, colMax+1):
-            sheet.cell(r, c).border = self.thickBorder
 
     def updateRaidVals(self):
         self.capital.cell(2, self.totalGoldR).value = self.totalGold
@@ -377,7 +403,11 @@ class Scriv():
         for i, p in enumerate(temp):
             best = i
             for j in range(i,len(temp)):
-                if members[temp[best]]['capitalResourcesLooted'] < members[temp[j]]['capitalResourcesLooted']:
+                if members[temp[j]]['capitalResourcesLooted'] == None:
+                    pass
+                elif members[temp[best]]['capitalResourcesLooted'] == None:
+                    best = j
+                elif members[temp[best]]['capitalResourcesLooted'] < members[temp[j]]['capitalResourcesLooted']:
                     best = j
                 elif members[temp[best]]['capitalResourcesLooted'] == members[temp[j]]['capitalResourcesLooted']:
                     if members[temp[best]]['donations'] < members[temp[j]]['donations']:
@@ -416,10 +446,14 @@ class Scriv():
             points += self.writeCell(self.clanMembers[m], r, self.attacksPosW, 'attackNumber', self.war, params=[2,1])
             points += self.writeCell(self.clanMembers[m], r, self.starsPosW, 'stars', self.war, params=[6,4])
             self.colorName(r, self.namePosW, points, [4,2], self.war)
+            self.war.cell(r, self.starsPosW).border = self.sideBorder
+
             for i, d in enumerate(self.warDates):
                 c = (((i+1)*2)+(self.repeatPosW-2))
                 self.writeCell(self.clanMembers[m], r,c, d, self.war, params=[2,1], dated = 0)
                 self.writeCell(self.clanMembers[m], r,c+1, d, self.war, params=[6,4], dated = 1)
+                self.war.cell(r, c+1).border = self.sideBorder
+
 
     def updateWarTimes(self):
         self.war.cell(2, self.datePosW).value = self.warTime
@@ -444,7 +478,14 @@ class Scriv():
 
         else:
             sheet.cell(r, c).font = Font(bold=False)
-        sheet.cell(r, c).border = None
+
+        if self.outFlag == 1:
+            sheet.cell(r, c).border = self.topBorder
+
+        elif self.notAttackedFlag == 1:
+            sheet.cell(r, c).border = self.topBorder
+        else:
+            sheet.cell(r, c).border = None
 
         # if (r-3) % 11 == 0:
         #     sheet.cell(r, c).border = self.thin_border

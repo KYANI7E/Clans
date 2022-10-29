@@ -316,14 +316,14 @@ class Scriv():
                 if self.clanMembers[m]['attacks'] == 0 and self.notAttackedFlag == 0:
                     self.capital.cell(r, c).border = self.topBorder
 
-                elif self.clanMembers[m]['status'] == 'Out' and self.outFlag == 0:
+                elif self.clanMembers[m]['status'] == 'Out' and self.clanMembers[m]['capitalResourcesLooted'] == None and self.outFlag == 0:
                     self.capital.cell(r, c).border = self.topBorder
 
                 else:
                     self.capital.cell(r, c).border = None
 
 
-            if self.clanMembers[m]['status'] == 'Out' and self.outFlag == 0:
+            if self.clanMembers[m]['status'] == 'Out' and self.clanMembers[m]['capitalResourcesLooted'] == None and self.outFlag == 0:
                 self.outFlag = 1
 
             if self.clanMembers[m]['attacks'] == 0 and self.notAttackedFlag == 0:

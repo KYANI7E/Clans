@@ -148,6 +148,7 @@ class Scriv():
         rowMax = self.war.max_row
         colMax = self.war.max_column
 
+        
         warD = warData['preparationStartTime'][0:8]
         self.warTime = warD[0:4] + "-" + warD[4:6] + "-" + warD[6:8]
         newInfo = False

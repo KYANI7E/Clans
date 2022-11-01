@@ -10,7 +10,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename="clash.log", level=logging.INFO, format="%(asctime)s :: %(name)s :: %(message)s")
-logging.info("Started")
 
 # logging.basicConfig(filename='example.log', filemode='w', level=logging.DEBUG)
 
@@ -22,10 +21,16 @@ def handle_unhandled_exception(exc_type, exc_value, exc_traceback):
         return
     logger.critical("Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback))
 
-sys.excepthook = handle_unhandled_exception
+
+if len(sys.argv) == 2:
+    sys.excepthook = handle_unhandled_exception
 
 print("Start")
 try:
+    if len(sys.argv) == 2:
+        logging.info("Started : {}".format(sys.argv[1]))
+    else: 
+        logging.info("Started : no params")
     configPath = "\\".join(sys.argv[0].split("\\")[:-1])
     with open(configPath + '\config.json', 'r') as myfile:
         data=myfile.read()
@@ -34,8 +39,11 @@ try:
     tokens = config['keys']
     file = configPath + '\\' + config['file']
     tags = config['tags']
-    
 except:
+    if len(sys.argv) == 2:
+        logging.info("Started : {}".format(sys.argv[1]))
+    else: 
+        logging.info("Started : no params")
     with open('config.json', 'r') as myfile:
         data=myfile.read()
     config = json.loads(data)
@@ -88,15 +96,17 @@ if flag:
 clanDataRaid = copy.deepcopy(clanData)
 clanDataWar = copy.deepcopy(clanData)
 
+if not warData["state"] == "notInWar":
+    war = scriv.Scriv(file, tags)
+    war.setUpMembers(clanDataWar)
 
-war = scriv.Scriv(file, tags)
-war.setUpMembers(clanDataWar)
-
-war.setUpWarColumnHeaders(2, 3, 4, 5, 6, 7, 5)
-war.setUpWar(warData)
-war.updateWarSheet(config['warAttacks'], config['stars'], config['warTotal'])
-war.saveFile(file)
-
+    war.setUpWarColumnHeaders(2, 3, 4, 5, 6, 7, 5)
+    war.setUpWar(warData)
+    war.updateWarSheet(config['warAttacks'], config['stars'], config['warTotal'])
+    war.saveFile(file)
+else:
+    logging.critical("Not in war")
+    print("Not in war")
 
 raid = scriv.Scriv(file, tags)
 raid.setUpMembers(clanDataRaid)

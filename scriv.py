@@ -677,13 +677,7 @@ class Scriv():
                 elif members[temp[best]]['capitalResourcesLooted'] == None:
                     best = j
                 elif members[temp[best]]['capitalResourcesLooted'] == 0 and members[temp[j]]['capitalResourcesLooted'] == 0:
-                    ddd = members[temp[j]]['capitalResourcesLooted']
-                    eee = members[temp[best]]['capitalResourcesLooted']
-                    name = members[temp[best]]['name']
-                    nammmm = members[temp[j]]['name']
                     for d in self.raidDates:
-                        a = members[temp[j]][d][1]
-                        b = members[temp[best]][d][1]
                         if members[temp[j]][d][1] == None:
                             # if members[temp[best]][d][1] == None:
                             #     break

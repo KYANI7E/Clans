@@ -36,6 +36,7 @@ try:
         data=myfile.read()
     config = json.loads(data)
     clanTag = config['clanTag']
+    clagTagWithHash = config['clanTagWith#']
     tokens = config['keys']
     file = configPath + '\\' + config['file']
     tags = config['tags']
@@ -48,6 +49,7 @@ except:
         data=myfile.read()
     config = json.loads(data)
     clanTag = config['clanTag']
+    clagTagWithHash = config['clanTagWith#']
     tokens = config['keys']
     file = config['file']
     tags = config['tags']
@@ -56,6 +58,7 @@ except:
 statusCode = None
 statusCodeW = None
 statusCodeR = None
+
 for t in tokens:
     drago = dragon.Dragon(t, clanTag)
     if not statusCode == 200:
@@ -64,6 +67,7 @@ for t in tokens:
         (warData, statusCodeW) = drago.getClanWarInfo(clanTag)
     if not statusCodeR == 200:
         (raidData, statusCodeR) = drago.getClanRaids(clanTag)
+
 
 
 flag = False
@@ -105,8 +109,39 @@ if not warData["state"] == "notInWar":
     war.updateWarSheet(config['warAttacks'], config['stars'], config['warTotal'])
     war.saveFile(file)
 else:
-    logging.critical("Not in war")
-    print("Not in war")
+    logging.critical("Not in war - checking if in clan league")
+    print("Not in war - checking if in clan league")
+
+    statusCodeL = None
+    for t in tokens:
+        if not statusCodeL == 200:
+            (leagueData, statusCodeL) = drago.getClanLeagueInfo(clanTag)
+        else:
+            break
+    
+    season = leagueData['season']
+
+    leagueWarsData = []
+
+    for rounds in leagueData['rounds']:
+        if rounds['warTags'][0] == '#0':
+            break
+        for warTags in rounds['warTags']:
+            (leagueWar, statusCodeL) = drago.getClanLeagueWarInfo(warTags.replace("#", "%23"))
+            if leagueWar['clan']['tag'] == clagTagWithHash or leagueWar['opponent']['tag'] == clagTagWithHash:
+                leagueWarsData.append(leagueWar)
+                break
+
+    war = scriv.Scriv(file, tags)
+    war.setUpMembers(clanDataWar)
+
+    war.setUpLeagueColumnHeaders(2, 3, 4, 5, 6, 4)
+    war.setUpLeague(leagueWarsData, season)
+    war.updateLeagueSheet(config['leagueTotal'], config['leagueAttacks'], config['leagueStars'])
+    war.saveFile(file)
+
+
+
 
 raid = scriv.Scriv(file, tags)
 raid.setUpMembers(clanDataRaid)

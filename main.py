@@ -52,6 +52,7 @@ except:
     file = config['file']
     tags = config['tags']
     
+clanTagS = clanTag
 clanTag = clanTag.replace("#", "%23")
 
 statusCode = None
@@ -127,7 +128,7 @@ else:
             break
         for warTags in rounds['warTags']:
             (leagueWar, statusCodeL) = drago.getClanLeagueWarInfo(warTags.replace("#", "%23"))
-            if leagueWar['clan']['tag'] == clanTag or leagueWar['opponent']['tag'] == clanTag:
+            if leagueWar['clan']['tag'] == clanTagS or leagueWar['opponent']['tag'] == clanTagS:
                 leagueWarsData.append(leagueWar)
                 break
 

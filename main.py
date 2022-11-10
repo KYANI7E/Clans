@@ -36,7 +36,6 @@ try:
         data=myfile.read()
     config = json.loads(data)
     clanTag = config['clanTag']
-    clagTagWithHash = config['clanTagWith#']
     tokens = config['keys']
     file = configPath + '\\' + config['file']
     tags = config['tags']
@@ -49,11 +48,11 @@ except:
         data=myfile.read()
     config = json.loads(data)
     clanTag = config['clanTag']
-    clagTagWithHash = config['clanTagWith#']
     tokens = config['keys']
     file = config['file']
     tags = config['tags']
     
+clanTag = clanTag.replace("#", "%23")
 
 statusCode = None
 statusCodeW = None
@@ -128,7 +127,7 @@ else:
             break
         for warTags in rounds['warTags']:
             (leagueWar, statusCodeL) = drago.getClanLeagueWarInfo(warTags.replace("#", "%23"))
-            if leagueWar['clan']['tag'] == clagTagWithHash or leagueWar['opponent']['tag'] == clagTagWithHash:
+            if leagueWar['clan']['tag'] == clanTag or leagueWar['opponent']['tag'] == clanTag:
                 leagueWarsData.append(leagueWar)
                 break
 

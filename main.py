@@ -119,26 +119,31 @@ else:
         else:
             break
     
-    season = leagueData['season']
+    if 'reason' in leagueData:
+        logging.critical("Not in clan league")
+        print("Not in clan league")
+    else:
 
-    leagueWarsData = []
+        season = leagueData['season']
 
-    for rounds in leagueData['rounds']:
-        if rounds['warTags'][0] == '#0':
-            break
-        for warTags in rounds['warTags']:
-            (leagueWar, statusCodeL) = drago.getClanLeagueWarInfo(warTags.replace("#", "%23"))
-            if leagueWar['clan']['tag'] == clanTagS or leagueWar['opponent']['tag'] == clanTagS:
-                leagueWarsData.append(leagueWar)
+        leagueWarsData = []
+
+        for rounds in leagueData['rounds']:
+            if rounds['warTags'][0] == '#0':
                 break
+            for warTags in rounds['warTags']:
+                (leagueWar, statusCodeL) = drago.getClanLeagueWarInfo(warTags.replace("#", "%23"))
+                if leagueWar['clan']['tag'] == clanTagS or leagueWar['opponent']['tag'] == clanTagS:
+                    leagueWarsData.append(leagueWar)
+                    break
 
-    war = scriv.Scriv(file, tags)
-    war.setUpMembers(clanDataWar)
+        war = scriv.Scriv(file, tags)
+        war.setUpMembers(clanDataWar)
 
-    war.setUpLeagueColumnHeaders(2, 3, 4, 5, 6, 4)
-    war.setUpLeague(leagueWarsData, season)
-    war.updateLeagueSheet(config['leagueTotal'], config['leagueAttacks'], config['leagueStars'])
-    war.saveFile(file)
+        war.setUpLeagueColumnHeaders(2, 3, 4, 5, 6, 4)
+        war.setUpLeague(leagueWarsData, season)
+        war.updateLeagueSheet(config['leagueTotal'], config['leagueAttacks'], config['leagueStars'])
+        war.saveFile(file)
 
 
 

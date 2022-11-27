@@ -392,7 +392,10 @@ class Scriv():
 
         self.totalAttacks = raidData['items'][0]['totalAttacks']
         self.disctrictsDestroyed = raidData['items'][0]['enemyDistrictsDestroyed']
-        self.average = round(self.totalAttacks / self.disctrictsDestroyed, 2)
+        if self.disctrictsDestroyed != 0:
+            self.average = round(self.totalAttacks / self.disctrictsDestroyed, 2)
+        else:
+            self.average = 0
 
         self.totalGold = raidData['items'][0]['capitalTotalLoot']
 
@@ -424,13 +427,13 @@ class Scriv():
                 self.clanMembers[tag] = {}
                 self.clanMembers[tag]['tag'] = self.capital.cell(r, self.tagPosR).value
                 self.clanMembers[tag]['name'] = self.capital.cell(r, self.namePosR).value
-                # self.clanMembers[tag]['trophies'] = self.capital.cell(r, self.mapPositionW).value
+            # self.clanMembers[tag]['trophies'] = self.capital.cell(r, self.mapPositionW).value
                 self.clanMembers[tag]['status'] = 'Out'
-                self.clanMembers[tag]['attacks'] = None
-                self.clanMembers[tag]['capitalResourcesLooted'] = None
                 self.clanMembers[tag]['donations'] = None
                 self.clanMembers[tag]['donationsReceived'] = None
                 self.clanMembers[tag]['trophies'] = self.capital.cell(r, self.trophiesPosR).value
+                self.clanMembers[tag]['attacks'] = None
+                self.clanMembers[tag]['capitalResourcesLooted'] = None
                 if newInfo:
                     self.clanMembers[tag][self.raidDates[0]] = [
                         self.capital.cell(r, self.attacksPosR).value,
@@ -683,8 +686,9 @@ class Scriv():
                             #     break
                             continue
                         elif members[temp[best]][d][1] == None:
+                            best = j
                             
-                            break
+                            continue
                         elif members[temp[best]][d][1] == 0 and members[temp[j]][d][1] == 0:
                             continue
                         elif members[temp[best]][d][1] < members[temp[j]][d][1]:

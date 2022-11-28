@@ -682,7 +682,6 @@ class Scriv():
                 elif members[temp[best]]['capitalResourcesLooted'] == 0 and members[temp[j]]['capitalResourcesLooted'] == 0:
                     for d in self.raidDates: 
                         if members[temp[j]][d][1] == None and members[temp[best]][d][1] != None:
-                            print(temp[j])
                             best = j
                             break
                         elif members[temp[j]][d][1] == None:

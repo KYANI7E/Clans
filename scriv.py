@@ -680,14 +680,15 @@ class Scriv():
                 elif members[temp[best]]['capitalResourcesLooted'] == None:
                     best = j
                 elif members[temp[best]]['capitalResourcesLooted'] == 0 and members[temp[j]]['capitalResourcesLooted'] == 0:
-                    for d in self.raidDates:
-                        if members[temp[j]][d][1] == None:
-                            # if members[temp[best]][d][1] == None:
-                            #     break
+                    for d in self.raidDates: 
+                        if members[temp[j]][d][1] == None and members[temp[best]][d][1] != None:
+                            print(temp[j])
+                            best = j
+                            break
+                        elif members[temp[j]][d][1] == None:
                             continue
                         elif members[temp[best]][d][1] == None:
-                            best = j
-                            
+                            # best = j
                             continue
                         elif members[temp[best]][d][1] == 0 and members[temp[j]][d][1] == 0:
                             continue

@@ -390,6 +390,7 @@ class Scriv():
         rowMax = self.capital.max_row
         colMax = self.capital.max_column
 
+        state = raidData['items'][0]['state']
         self.totalAttacks = raidData['items'][0]['totalAttacks']
         self.disctrictsDestroyed = raidData['items'][0]['enemyDistrictsDestroyed']
         if self.disctrictsDestroyed != 0:
@@ -440,6 +441,16 @@ class Scriv():
                         self.capital.cell(r, self.goldPosR).value
                     ]
             else:
+                if state == 'ended':
+                    flag = True
+                    for m in raidData['items'][0]['members']:
+                        if m['tag'] == tag:
+                            flag = False
+                    if flag:
+                        self.clanMembers[tag]['capitalResourcesLooted'] = self.capital.cell(r, self.goldPosR).value
+                        self.clanMembers[tag]['attacks'] = self.capital.cell(r, self.attacksPosR).value
+
+
                 if newInfo:
                     self.clanMembers[tag][self.raidDates[0]] = [
                         self.capital.cell(r, self.attacksPosR).value,
@@ -452,7 +463,7 @@ class Scriv():
                     self.capital.cell(r, c).value,
                     self.capital.cell(r, c+1).value
                 ]
-        
+
         for m in self.clanMembers:
             for d in self.raidDates:
                 if not d in self.clanMembers[m]:
@@ -580,7 +591,7 @@ class Scriv():
         for r,m in enumerate(tags,4):
             colMax = self.capital.max_column
             for c in range(1, colMax+1):
-                if self.clanMembers[m]['attacks'] == 0 and self.notAttackedFlag == 0:
+                if (self.clanMembers[m]['attacks'] == None or self.clanMembers[m]['attacks'] == 0) and self.notAttackedFlag == 0:
                     self.capital.cell(r, c).border = self.topBorder
 
                 elif self.clanMembers[m]['status'] == 'Out' and self.clanMembers[m]['capitalResourcesLooted'] == None and self.outFlag == 0:
@@ -593,7 +604,7 @@ class Scriv():
             if self.clanMembers[m]['status'] == 'Out' and self.clanMembers[m]['capitalResourcesLooted'] == None and self.outFlag == 0:
                 self.outFlag = 1
 
-            if self.clanMembers[m]['attacks'] == 0 and self.notAttackedFlag == 0:
+            if (self.clanMembers[m]['attacks'] == None or self.clanMembers[m]['attacks'] == 0) and self.notAttackedFlag == 0:
                 self.notAttackedFlag = 1
 
 
@@ -674,11 +685,17 @@ class Scriv():
             for j in range(i+1,len(temp)):
                 if i == j:
                     continue
-
-                if members[temp[j]]['capitalResourcesLooted'] == None:
-                    pass
+                if members[temp[j]]['status'] == 'Out' and members[temp[j]]['capitalResourcesLooted'] == None:
+                    continue
+                elif members[temp[j]]['capitalResourcesLooted'] == None:
+                    if members[temp[best]]['capitalResourcesLooted'] == 0:
+                        best = j
+                        pass
+                    continue
                 elif members[temp[best]]['capitalResourcesLooted'] == None:
-                    best = j
+                    if members[temp[j]]['capitalResourcesLooted'] != 0:
+                        best = j
+
                 elif members[temp[best]]['capitalResourcesLooted'] == 0 and members[temp[j]]['capitalResourcesLooted'] == 0:
                     for d in self.raidDates: 
                         if members[temp[j]][d][1] == None and members[temp[best]][d][1] != None:
@@ -706,7 +723,7 @@ class Scriv():
                 elif members[temp[best]]['capitalResourcesLooted'] == members[temp[j]]['capitalResourcesLooted']:
                     if members[temp[best]]['donations'] < members[temp[j]]['donations']:
                         best = j
-                    break
+                    continue
 
             tt = temp[i]
             temp[i] = temp[best]

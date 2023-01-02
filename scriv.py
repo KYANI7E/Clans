@@ -41,7 +41,7 @@ class Scriv():
         self.outFlag = 0
         self.notAttackedFlag = 0
 
-        self.numFormat = u'#,##0;'
+        self.numFormat = u'#,###;'
 
         self.thin_border = Border(top=Side(style='thin', color='454545'))
         self.topBorder = Border(top=Side(style='thick'))
@@ -588,6 +588,11 @@ class Scriv():
         self.capital.column_dimensions['C'].width = 5
         self.capital.column_dimensions['G'].width = 7
         self.capital.column_dimensions['H'].width = 7
+        for i in range(1,4):
+            self.capital.cell(i, self.donationRecievedR).border = self.sideBorder
+            self.capital.cell(i, self.goldPosR).border = self.sideBorder
+            self.capital.cell(i, self.namePosR).border = self.sideBorder
+
         for r,m in enumerate(tags,4):
             colMax = self.capital.max_column
             for c in range(1, colMax+1):
@@ -633,6 +638,10 @@ class Scriv():
             
             for i, d in enumerate(self.raidDates):
                 c = (((i+1)*2)+(self.repeatPosR-2))
+
+                for g in range(1,4):
+                    self.capital.cell(g, c+1).border = self.sideBorder
+
                 self.writeCell(self.clanMembers[m], r,c, d, self.capital, params=attackThreshold, dated = 0)
                 self.writeCell(self.clanMembers[m], r,c+1, d, self.capital, params=goldThreshold, dated = 1)
                 if  self.outFlag == 1 or self.notAttackedFlag == 1:
@@ -653,21 +662,74 @@ class Scriv():
         self.colorSet(self.gray, self.gray2, r, self.positionPosR, self.capital)
 
     def updateRaidVals(self):
+        tick = 0
+        try:
+            t = (int)(self.capital.cell(1, self.totalGoldR).value)
+            if t > self.medals[0]:
+                self.colorSet(self.green, self.green, 1, self.totalGoldR, self.capital)
+            else:
+                self.colorSet(self.red, self.red, 1, self.totalGoldR, self.capital)
+                tick += 1
+        except:
+            pass
+
         self.capital.cell(2, self.totalGoldR).value = self.totalGold
+        if self.totalGold > self.raidGolds[0]:
+            self.colorSet(self.green, self.green, 2, self.totalGoldR, self.capital)
+        else:
+            self.colorSet(self.red, self.red, 2, self.totalGoldR, self.capital)
+            tick += 1
+
+
         self.capital.cell(2, self.totalGoldR).number_format  = self.numFormat
+
         self.capital.cell(2, self.totalDonoR).value = self.totalDonations
         self.capital.cell(2, self.totalDonoR).number_format  = self.numFormat
 
-        self.capital.cell(1, self.datePosR).value = self.raidTime
+
         self.capital.cell(2, self.datePosR).value = self.average
+        if self.average < self.averages[0]:
+            self.colorSet(self.green, self.green, 2, self.datePosR, self.capital)
+        else:
+            self.colorSet(self.red, self.red, 2, self.datePosR, self.capital)
+            tick += 1
+
+
+        self.capital.cell(1, self.datePosR).value = self.raidTime
+        if tick < 2:
+            self.colorSet(self.green, self.green, 1, self.datePosR, self.capital)
+        else:
+            self.colorSet(self.red, self.red, 1, self.datePosR, self.capital)
 
         for i,d in enumerate(self.raidDates):
+            tick = 0
             c = (((i+1)*2)+(self.repeatPosR-2))
-            self.capital.cell(1, c).value = self.raidDates[i]
             self.capital.cell(2, c).value = self.averages[i]
+            if self.averages[i] > self.averages[i-1]:
+                self.colorSet(self.green, self.green, 2, c, self.capital, False)
+            else:
+                self.colorSet(self.red, self.red, 2, c, self.capital, False)
+                tick += 1
+
             self.capital.cell(2, c+1).value = self.raidGolds[i]
-            self.capital.cell(2, c+1).number_format  = self.numFormat
+            if self.raidGolds[i] > self.raidGolds[i-1]:
+                self.colorSet(self.green, self.green, 2, c+1, self.capital)
+            else:
+                self.colorSet(self.red, self.red, 2, c+1, self.capital)
+                tick += 1
+
             self.capital.cell(1, c+1).value = self.medals[i]
+            if self.medals[i] > self.medals[i-1]:
+                self.colorSet(self.green, self.green, 1, c+1, self.capital)
+            else:
+                self.colorSet(self.red, self.red, 1, c+1, self.capital)
+                tick += 1
+
+            self.capital.cell(1, c).value = self.raidDates[i]
+            if tick < 2:
+                self.colorSet(self.green, self.green, 1, c, self.capital)
+            else:
+                self.colorSet(self.red, self.red, 1, c, self.capital)
 
             self.capital.cell(3, c).value = "Attacks"
             self.capital.cell(3, c+1).value = "Gold"
@@ -845,9 +907,10 @@ class Scriv():
                 sheet.cell(r, c).value = None
                 return 0
 
-    def colorSet(self, color, color2, r, c, sheet):
+    def colorSet(self, color, color2, r, c, sheet, sameFormat = True):
         if r % 2 == 0:
             sheet.cell(r, c).fill = color
         else:
             sheet.cell(r, c).fill = color2
-        sheet.cell(r, c).number_format  = self.numFormat
+        if sameFormat:
+            sheet.cell(r, c).number_format  = self.numFormat

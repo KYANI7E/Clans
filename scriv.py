@@ -689,9 +689,9 @@ class Scriv():
 
         self.capital.cell(2, self.datePosR).value = self.average
         if self.average < self.averages[0]:
-            self.colorSet(self.green, self.green, 2, self.datePosR, self.capital)
+            self.colorSet(self.green, self.green, 2, self.datePosR, self.capital, False)
         else:
-            self.colorSet(self.red, self.red, 2, self.datePosR, self.capital)
+            self.colorSet(self.red, self.red, 2, self.datePosR, self.capital, False)
             tick += 1
 
 

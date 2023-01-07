@@ -705,34 +705,38 @@ class Scriv():
             tick = 0
             c = (((i+1)*2)+(self.repeatPosR-2))
             self.capital.cell(2, c).value = self.averages[i]
-            if self.averages[i] > self.averages[i-1]:
+            self.capital.cell(2, c+1).value = self.raidGolds[i]
+            self.capital.cell(1, c+1).value = self.medals[i]
+            self.capital.cell(1, c).value = self.raidDates[i]
+            self.capital.cell(3, c).value = "Attacks"
+            self.capital.cell(3, c+1).value = "Gold"
+
+            if i == len(self.raidDates) -1:
+                continue
+
+            if self.averages[i] < self.averages[i+1]:
                 self.colorSet(self.green, self.green, 2, c, self.capital, False)
             else:
                 self.colorSet(self.red, self.red, 2, c, self.capital, False)
                 tick += 1
 
-            self.capital.cell(2, c+1).value = self.raidGolds[i]
-            if self.raidGolds[i] > self.raidGolds[i-1]:
+            if self.raidGolds[i] > self.raidGolds[i+1]:
                 self.colorSet(self.green, self.green, 2, c+1, self.capital)
             else:
                 self.colorSet(self.red, self.red, 2, c+1, self.capital)
                 tick += 1
 
-            self.capital.cell(1, c+1).value = self.medals[i]
-            if self.medals[i] > self.medals[i-1]:
+            if self.medals[i] > self.medals[i+1]:
                 self.colorSet(self.green, self.green, 1, c+1, self.capital)
             else:
                 self.colorSet(self.red, self.red, 1, c+1, self.capital)
                 tick += 1
 
-            self.capital.cell(1, c).value = self.raidDates[i]
             if tick < 2:
                 self.colorSet(self.green, self.green, 1, c, self.capital)
             else:
                 self.colorSet(self.red, self.red, 1, c, self.capital)
 
-            self.capital.cell(3, c).value = "Attacks"
-            self.capital.cell(3, c+1).value = "Gold"
 
     def sortGold(self, members):
         temp = []

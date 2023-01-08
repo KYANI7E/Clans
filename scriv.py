@@ -46,6 +46,7 @@ class Scriv():
         self.thin_border = Border(top=Side(style='thin', color='454545'))
         self.topBorder = Border(top=Side(style='thick'))
         self.topNSideBorder = Border(top=Side(style='thick'), right=Side(style='medium'))
+        self.bottomNSideBorder = Border(bottom=Side(style='thick'), right=Side(style='medium'))
         self.sideBorder = Border(right=Side(style='medium'))
 
 
@@ -616,8 +617,8 @@ class Scriv():
             points = -1
             self.writeRank(r, self.capital)
             self.writeCell(self.clanMembers[m], r, self.tagPosR, 'tag', self.capital, tag=True)
-            self.writeCell(self.clanMembers[m], r, self.trophiesPosR, 'trophies', self.capital)
             self.writeCell(self.clanMembers[m], r, self.namePosR, 'name', self.capital)
+            self.writeCell(self.clanMembers[m], r, self.trophiesPosR, 'trophies', self.capital)
             points += self.writeCell(self.clanMembers[m], r, self.attacksPosR, 'attacks', self.capital, params=attackThreshold)
             points += self.writeCell(self.clanMembers[m], r, self.goldPosR, 'capitalResourcesLooted', self.capital, params=goldThreshold)
             self.writeCell(self.clanMembers[m], r, self.donationPosR, 'donations', self.capital, params=donationsThreshold)
@@ -633,7 +634,7 @@ class Scriv():
                 self.capital.cell(r, self.goldPosR).border = self.sideBorder
                 self.capital.cell(r, self.namePosR).border = self.sideBorder
 
-
+            self.underLineName(self.clanMembers[m], r, self.namePosR, self.capital)
             
             
             for i, d in enumerate(self.raidDates):
@@ -910,6 +911,15 @@ class Scriv():
                 self.colorSet(self.gray, self.gray2, r, c, sheet)
                 sheet.cell(r, c).value = None
                 return 0
+
+    def underLineName(self, member, r, c, sheet):
+        print("ekekekekekekke")
+        if(self.notAttackedFlag == 0) :
+            if(len(self.raidDates) > 0):
+                if(not self.raidDates[0] in member):
+                    sheet.cell(r,c).border = self.bottomNSideBorder
+                elif(member[self.raidDates[0]][0] == None or member[self.raidDates[0]][0] == 0):
+                    sheet.cell(r,c).border = self.bottomNSideBorder
 
     def colorSet(self, color, color2, r, c, sheet, sameFormat = True):
         if r % 2 == 0:

@@ -913,7 +913,6 @@ class Scriv():
                 return 0
 
     def underLineName(self, member, r, c, sheet):
-        print("ekekekekekekke")
         if(self.notAttackedFlag == 0) :
             if(len(self.raidDates) > 0):
                 if(not self.raidDates[0] in member):

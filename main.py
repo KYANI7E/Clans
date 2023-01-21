@@ -61,12 +61,12 @@ statusCodeR = None
 
 for t in tokens:
     drago = dragon.Dragon(t, clanTag)
-    if not statusCode == 200:
-        (clanData, statusCode) = drago.getClanInfo(clanTag)
-    if not statusCodeW == 200:
-        (warData, statusCodeW) = drago.getClanWarInfo(clanTag)
-    if not statusCodeR == 200:
-        (raidData, statusCodeR) = drago.getClanRaids(clanTag)
+    (clanData, statusCode) = drago.getClanInfo(clanTag)
+    (warData, statusCodeW) = drago.getClanWarInfo(clanTag)
+    (raidData, statusCodeR) = drago.getClanRaids(clanTag)
+    if statusCode == 200:
+        break
+    
 
 
 
@@ -151,9 +151,10 @@ else:
 raid = scriv.Scriv(file, tags)
 raid.setUpMembers(clanDataRaid)
 
-raid.setUpRaidColumnHeaders(1,2,3,4,5,6,7,8,9,5,6,7)
+raid.setUpRaidColumnHeaders(1,2,3,4,5,6,7,8,9,10,5,6,7)
 raid.setUpRaids(raidData)
-raid.updateRiadsSheet(config['gold'], config['raidAttacks'], config['donations'], config['raidTotal'])
+raid.addPlayerTotalGold(drago)
+raid.updateRiadsSheet(config['gold'], config['raidAttacks'], config['donations'], config['raidTotal'], config['totalContributionThreshold'])
 raid.saveFile(file)
 
 logging.info("Exited")

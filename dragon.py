@@ -97,3 +97,16 @@ class Dragon:
             if 400 <= response.status_code <= 599:
                 return ("Error {}".format(response.status_code), None)
     
+    def getPlayerInfo(self, playerTag):
+
+        api_endpoint = "https://api.clashofclans.com/v1/players/"
+        uri = playerTag
+
+        url = api_endpoint + uri
+
+        try:
+            response = requests.get(url, headers=self.headers, timeout=30)
+            return (response.json(), response.status_code)
+        except:
+            if 400 <= response.status_code <= 599:
+                return "Error {}".format(response.status_code)

@@ -8,6 +8,7 @@ from openpyxl.styles import PatternFill , numbers, Font, Border, Alignment
 from openpyxl.utils import get_column_letter
 from openpyxl.styles.borders import Border, Side
 import logging
+from tqdm import tqdm
 
 class Scriv():
     def saveFile(self, fileName):
@@ -41,7 +42,7 @@ class Scriv():
         self.outFlag = 0
         self.notAttackedFlag = 0
 
-        self.numFormat = u'#,###;'
+        self.numFormat = u'#,###,###;'
 
         self.thin_border = Border(top=Side(style='thin', color='454545'))
         self.topBorder = Border(top=Side(style='thick'))
@@ -117,7 +118,7 @@ class Scriv():
         self.leagueSetUp()
 
 
-    def setUpRaidColumnHeaders(self, tag, trophies, position, name, attacks, stars, dono, donoR, repeat,
+    def setUpRaidColumnHeaders(self, tag, trophies, position, name, attacks, stars, playerTotal, dono, donoR, repeat,
      date, totalGold, totalDono):
         print("Setting up raid sheet...")
         self.tagPosR = tag
@@ -126,12 +127,13 @@ class Scriv():
         self.namePosR = name
         self.attacksPosR = attacks
         self.goldPosR = stars
+        self.playerTotal = playerTotal
         self.donationPosR = dono
         self.donationRecievedR = donoR
         self.repeatPosR = repeat
         self.datePosR = date
         self.totalGoldR = totalGold
-        self.totalDonoR = totalDono
+        self.totalDonoR = dono
         self.raidSetUp()
 
     def leagueSetUp(self):
@@ -145,6 +147,7 @@ class Scriv():
         self.capital.cell(3, self.trophiesPosR).value = 'Trophies'
         self.capital.cell(3, self.namePosR).value = 'Name'
         self.capital.cell(3, self.attacksPosR).value = 'Attacks'
+        self.capital.cell(3, self.playerTotal).value = 'Total'
         self.capital.cell(3, self.goldPosR).value = 'Gold'
         self.capital.cell(3, self.donationPosR).value = 'D'
         self.capital.cell(3, self.donationRecievedR).value = 'DR'
@@ -160,6 +163,7 @@ class Scriv():
         totalDonations = 0
         if self.clanMembers == {}:
             tempMembers = clanData['memberList']
+
             for i, p in enumerate(tempMembers):
                 self.clanMembers[p['tag']] = tempMembers[i]
                 self.clanMembers[p['tag']]['attacks'] = 0
@@ -168,6 +172,7 @@ class Scriv():
                 self.clanMembers[p['tag']]['attackNumber'] = None
                 self.clanMembers[p['tag']]['stars'] = None
                 self.clanMembers[p['tag']]['mapPosition'] = None
+
                 totalDonations += tempMembers[i]['donations']
 
         self.totalDonations = totalDonations
@@ -482,6 +487,14 @@ class Scriv():
             self.clanMembers[m['tag']]['attacks'] = m['attacks']
             self.clanMembers[m['tag']]['capitalResourcesLooted'] = m['capitalResourcesLooted']
 
+    def addPlayerTotalGold(self, drago):
+        print("Fetching player info for total contributions...")
+        for tag in tqdm(self.clanMembers):
+            tago = tag.replace("#", "%23")
+            player = drago.getPlayerInfo(tago)
+            totalGold = player[0]['clanCapitalContributions']
+            self.clanMembers[tag]['totalGold'] = totalGold
+
     def updateLeagueSheet(self, totalThrshold, attackThreshold, starsThreshold):
         print("Updating war sheet")
         self.updateLeagueSeasons()
@@ -580,15 +593,17 @@ class Scriv():
             self.league.cell(3, c).value = "Attacks"
             self.league.cell(3, c+1).value = "Stars"
 
-    def updateRiadsSheet(self, goldThreshold, attackThreshold, donationsThreshold, totalThreshold):
+    def updateRiadsSheet(self, goldThreshold, attackThreshold, donationsThreshold, totalThreshold, playerTotalThreshold):
         print("Updating raid sheet...")
         self.updateRaidVals()
 
         tags = self.sortGold(self.clanMembers)
 
+
         self.capital.column_dimensions['C'].width = 5
-        self.capital.column_dimensions['G'].width = 7
+        self.capital.column_dimensions['G'].width = 10
         self.capital.column_dimensions['H'].width = 7
+        self.capital.column_dimensions['I'].width = 7
         for i in range(1,4):
             self.capital.cell(i, self.donationRecievedR).border = self.sideBorder
             self.capital.cell(i, self.goldPosR).border = self.sideBorder
@@ -621,6 +636,7 @@ class Scriv():
             self.writeCell(self.clanMembers[m], r, self.trophiesPosR, 'trophies', self.capital)
             points += self.writeCell(self.clanMembers[m], r, self.attacksPosR, 'attacks', self.capital, params=attackThreshold)
             points += self.writeCell(self.clanMembers[m], r, self.goldPosR, 'capitalResourcesLooted', self.capital, params=goldThreshold)
+            self.writeCell(self.clanMembers[m], r, self.playerTotal, 'totalGold', self.capital, params=playerTotalThreshold)
             self.writeCell(self.clanMembers[m], r, self.donationPosR, 'donations', self.capital, params=donationsThreshold)
             self.writeCell(self.clanMembers[m], r, self.donationRecievedR, 'donationsReceived', self.capital)
             self.colorName(r, self.namePosR, points, totalThreshold, self.capital)

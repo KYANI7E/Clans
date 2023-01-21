@@ -151,7 +151,7 @@ else:
 raid = scriv.Scriv(file, tags)
 raid.setUpMembers(clanDataRaid)
 
-raid.setUpRaidColumnHeaders(1,2,3,4,5,6,7,8,9,10,5,6,7)
+raid.setUpRaidColumnHeaders(1,2,3,4,5,6,7,8,9,10,11,5,6,8)
 raid.setUpRaids(raidData)
 raid.addPlayerTotalGold(drago)
 raid.updateRiadsSheet(config['gold'], config['raidAttacks'], config['donations'], config['raidTotal'], config['totalContributionThreshold'])

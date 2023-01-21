@@ -118,7 +118,7 @@ class Scriv():
         self.leagueSetUp()
 
 
-    def setUpRaidColumnHeaders(self, tag, trophies, position, name, attacks, stars, playerTotal, dono, donoR, repeat,
+    def setUpRaidColumnHeaders(self, tag, trophies, position, name, attacks, stars, playerContrib, playerTotal, dono, donoR, repeat,
      date, totalGold, totalDono):
         print("Setting up raid sheet...")
         self.tagPosR = tag
@@ -127,6 +127,7 @@ class Scriv():
         self.namePosR = name
         self.attacksPosR = attacks
         self.goldPosR = stars
+        self.playerContrib = playerContrib
         self.playerTotal = playerTotal
         self.donationPosR = dono
         self.donationRecievedR = donoR
@@ -147,6 +148,7 @@ class Scriv():
         self.capital.cell(3, self.trophiesPosR).value = 'Trophies'
         self.capital.cell(3, self.namePosR).value = 'Name'
         self.capital.cell(3, self.attacksPosR).value = 'Attacks'
+        self.capital.cell(3, self.playerContrib).value = 'Contribution'
         self.capital.cell(3, self.playerTotal).value = 'Total'
         self.capital.cell(3, self.goldPosR).value = 'Gold'
         self.capital.cell(3, self.donationPosR).value = 'D'
@@ -482,10 +484,23 @@ class Scriv():
                     self.clanMembers[m]['attackNumber'] = None
                     self.clanMembers[m]['stars'] = None
                     self.clanMembers[m]['mapPosition'] = None
+            
+
 
         for m in raidData['items'][0]['members']:
             self.clanMembers[m['tag']]['attacks'] = m['attacks']
             self.clanMembers[m['tag']]['capitalResourcesLooted'] = m['capitalResourcesLooted']
+
+        for tag in self.clanMembers:
+            contrib = self.clanMembers[tag]['capitalResourcesLooted']
+            if contrib == None:
+                contrib = 0
+            for d in self.raidDates:
+                if self.clanMembers[tag][d][1] != None:
+                    contrib += self.clanMembers[tag][d][1]
+            self.clanMembers[tag]['contrib'] = contrib
+        
+
 
     def addPlayerTotalGold(self, drago):
         print("Fetching player info for total contributions...")
@@ -494,6 +509,8 @@ class Scriv():
             player = drago.getPlayerInfo(tago)
             totalGold = player[0]['clanCapitalContributions']
             self.clanMembers[tag]['totalGold'] = totalGold
+        
+
 
     def updateLeagueSheet(self, totalThrshold, attackThreshold, starsThreshold):
         print("Updating war sheet")
@@ -602,11 +619,13 @@ class Scriv():
 
         self.capital.column_dimensions['C'].width = 5
         self.capital.column_dimensions['G'].width = 10
-        self.capital.column_dimensions['H'].width = 7
+        self.capital.column_dimensions['H'].width = 10
         self.capital.column_dimensions['I'].width = 7
+        self.capital.column_dimensions['J'].width = 7
         for i in range(1,4):
             self.capital.cell(i, self.donationRecievedR).border = self.sideBorder
             self.capital.cell(i, self.goldPosR).border = self.sideBorder
+            self.capital.cell(i, self.playerTotal).border = self.sideBorder
             self.capital.cell(i, self.namePosR).border = self.sideBorder
 
         for r,m in enumerate(tags,4):
@@ -636,6 +655,7 @@ class Scriv():
             self.writeCell(self.clanMembers[m], r, self.trophiesPosR, 'trophies', self.capital)
             points += self.writeCell(self.clanMembers[m], r, self.attacksPosR, 'attacks', self.capital, params=attackThreshold)
             points += self.writeCell(self.clanMembers[m], r, self.goldPosR, 'capitalResourcesLooted', self.capital, params=goldThreshold)
+            self.writeCell(self.clanMembers[m], r, self.playerContrib, 'contrib', self.capital, params=playerTotalThreshold)
             self.writeCell(self.clanMembers[m], r, self.playerTotal, 'totalGold', self.capital, params=playerTotalThreshold)
             self.writeCell(self.clanMembers[m], r, self.donationPosR, 'donations', self.capital, params=donationsThreshold)
             self.writeCell(self.clanMembers[m], r, self.donationRecievedR, 'donationsReceived', self.capital)
@@ -644,10 +664,12 @@ class Scriv():
             if  self.outFlag == 1 or self.notAttackedFlag == 1:
                 self.capital.cell(r, self.donationRecievedR).border = self.topNSideBorder
                 self.capital.cell(r, self.goldPosR).border = self.topNSideBorder
+                self.capital.cell(r, self.playerTotal).border = self.topNSideBorder
                 self.capital.cell(r, self.namePosR).border = self.topNSideBorder
             else:
                 self.capital.cell(r, self.donationRecievedR).border = self.sideBorder
                 self.capital.cell(r, self.goldPosR).border = self.sideBorder
+                self.capital.cell(r, self.playerTotal).border = self.sideBorder
                 self.capital.cell(r, self.namePosR).border = self.sideBorder
 
             self.underLineName(self.clanMembers[m], r, self.namePosR, self.capital)

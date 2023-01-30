@@ -24,7 +24,7 @@
     "gold": [6000, 4000],
     "raidAttacks": [5, 3],
     "raidTotal": [4, 3],
-    "totalContributionThreshold":[100000, 50000],
+    "totalContributionThreshold":[100000, 1],
 
     "stars": [4, 3],
     "warAttacks": [2,1],

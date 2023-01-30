@@ -1,3 +1,4 @@
+cmd /c start /position (-1204, -232)
 powershell python C:\Users\Sage\OneDrive\Desktop\gitRepos\ClashOfClans_clanManagement\main.py automation
 powershell git pull
 powershell git add Clash.xlsx

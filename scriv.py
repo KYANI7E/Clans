@@ -618,7 +618,7 @@ class Scriv():
 
 
         self.capital.column_dimensions['C'].width = 5
-        self.capital.column_dimensions['G'].width = 10
+        self.capital.column_dimensions['G'].width = 13
         self.capital.column_dimensions['H'].width = 10
         self.capital.column_dimensions['I'].width = 7
         self.capital.column_dimensions['J'].width = 7

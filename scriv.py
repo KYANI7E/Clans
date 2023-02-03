@@ -148,8 +148,8 @@ class Scriv():
         self.capital.cell(3, self.trophiesPosR).value = 'Trophies'
         self.capital.cell(3, self.namePosR).value = 'Name'
         self.capital.cell(3, self.attacksPosR).value = 'Attacks'
-        self.capital.cell(3, self.playerContrib).value = 'Contribution'
-        self.capital.cell(3, self.playerTotal).value = 'Total'
+        self.capital.cell(3, self.playerContrib).value = 'Raided'
+        self.capital.cell(3, self.playerTotal).value = 'Conrib'
         self.capital.cell(3, self.goldPosR).value = 'Gold'
         self.capital.cell(3, self.donationPosR).value = 'D'
         self.capital.cell(3, self.donationRecievedR).value = 'DR'
@@ -441,6 +441,7 @@ class Scriv():
                 self.clanMembers[tag]['donations'] = None
                 self.clanMembers[tag]['donationsReceived'] = None
                 self.clanMembers[tag]['trophies'] = self.capital.cell(r, self.trophiesPosR).value
+                self.clanMembers[tag]['totalGold'] = self.capital.cell(r , self.playerTotal).value
                 self.clanMembers[tag]['attacks'] = None
                 self.clanMembers[tag]['capitalResourcesLooted'] = None
                 if newInfo:
@@ -502,9 +503,11 @@ class Scriv():
         
 
 
-    def addPlayerTotalGold(self, drago):
+    def addPlayerTotalGold(self, drago, all):
         print("Fetching player info for total contributions...")
         for tag in tqdm(self.clanMembers):
+            if(all != "all" and self.clanMembers[tag]["status"] == "Out"):
+                continue
             tago = tag.replace("#", "%23")
             player = drago.getPlayerInfo(tago)
             totalGold = player[0]['clanCapitalContributions']

@@ -22,13 +22,16 @@ def handle_unhandled_exception(exc_type, exc_value, exc_traceback):
     logger.critical("Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback))
 
 
-if len(sys.argv) == 2:
+if len(sys.argv) > 1:
     sys.excepthook = handle_unhandled_exception
 
+loadAllPlayerGold = "all"
 print("Start")
 try:
-    if len(sys.argv) == 2:
+    if len(sys.argv) > 1:
         logging.info("Started : {}".format(sys.argv[1]))
+        if len(sys.argv) > 2:
+            loadAllPlayerGold = sys.argv[2]
     else: 
         logging.info("Started : no params")
     configPath = "\\".join(sys.argv[0].split("\\")[:-1])
@@ -40,8 +43,10 @@ try:
     file = configPath + '\\' + config['file']
     tags = config['tags']
 except:
-    if len(sys.argv) == 2:
+    if len(sys.argv) > 1:
         logging.info("Started : {}".format(sys.argv[1]))
+        if len(sys.argv) > 2:
+            loadAllPlayerGold = sys.argv[2]
     else: 
         logging.info("Started : no params")
     with open('config.json', 'r') as myfile:
@@ -153,7 +158,7 @@ raid.setUpMembers(clanDataRaid)
 
 raid.setUpRaidColumnHeaders(1,2,3,4,5,6,7,8,9,10,11,5,6,8)
 raid.setUpRaids(raidData)
-raid.addPlayerTotalGold(drago)
+raid.addPlayerTotalGold(drago, loadAllPlayerGold)
 raid.updateRiadsSheet(config['gold'], config['raidAttacks'], config['donations'], config['raidTotal'], config['totalContributionThreshold'])
 raid.saveFile(file)
 

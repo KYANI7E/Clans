@@ -1,2 +1,4 @@
 #ehh dont need to ignore anything
 *.log
+__pycache__/
+.vscode/

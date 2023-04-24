@@ -25,7 +25,7 @@ def handle_unhandled_exception(exc_type, exc_value, exc_traceback):
 if len(sys.argv) > 1:
     sys.excepthook = handle_unhandled_exception
 
-loadAllPlayerGold = "all"
+loadAllPlayerGold = "None"
 print("Start")
 try:
     if len(sys.argv) > 1:

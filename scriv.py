@@ -379,6 +379,8 @@ class Scriv():
 
         self.warAmount = 0
         for m in warData['clan']['members']:
+            if not m['tag'] in self.clanMembers:
+                continue
             self.warAmount += 1
             if 'attacks' in m:
                 stars = 0
@@ -503,15 +505,21 @@ class Scriv():
         
 
 
-    def addPlayerTotalGold(self, drago, all):
+    def addPlayerTotalGold(self, drago, all = 'None'):
+      
         print("Fetching player info for total contributions...")
+        r = 4
         for tag in tqdm(self.clanMembers):
             if(all != "all" and self.clanMembers[tag]["status"] == "Out"):
                 continue
             tago = tag.replace("#", "%23")
-            player = drago.getPlayerInfo(tago)
-            totalGold = player[0]['clanCapitalContributions']
-            self.clanMembers[tag]['totalGold'] = totalGold
+            if all != 'None':
+                player = drago.getPlayerInfo(tago)
+                totalGold = player[0]['clanCapitalContributions']
+                self.clanMembers[tag]['totalGold'] = totalGold
+            else:
+                self.clanMembers[tag]['totalGold'] = self.capital.cell(r , self.playerTotal).value
+                r += 1
         
 
 

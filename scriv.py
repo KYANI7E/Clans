@@ -505,20 +505,20 @@ class Scriv():
         
 
 
-    def addPlayerTotalGold(self, drago, all = 'None'):
+    def addPlayerTotalGold(self, drago, loadGold = "none"):
       
         print("Fetching player info for total contributions...")
         r = 4
         for tag in tqdm(self.clanMembers):
-            if(all != "all" and self.clanMembers[tag]["status"] == "Out"):
+            if(loadGold == "inClan" and self.clanMembers[tag]["status"] == "Out"):
                 continue
             tago = tag.replace("#", "%23")
-            if all != 'None':
+            if loadGold == 'all' or loadGold == 'inClan':
                 player = drago.getPlayerInfo(tago)
                 totalGold = player[0]['clanCapitalContributions']
                 self.clanMembers[tag]['totalGold'] = totalGold
-            else:
-                self.clanMembers[tag]['totalGold'] = self.capital.cell(r , self.playerTotal).value
+            elif loadGold == "none":
+                self.clanMembers[self.capital.cell(r , self.tagPosR).value]['totalGold'] = self.capital.cell(r , self.playerTotal).value
                 r += 1
         
 

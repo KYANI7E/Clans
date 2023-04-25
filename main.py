@@ -25,15 +25,24 @@ def handle_unhandled_exception(exc_type, exc_value, exc_traceback):
 if len(sys.argv) > 1:
     sys.excepthook = handle_unhandled_exception
 
-loadAllPlayerGold = "None"
+loadAllPlayerGold = 'none'
 print("Start")
 try:
-    if len(sys.argv) > 1:
-        logging.info("Started : {}".format(sys.argv[1]))
-        if len(sys.argv) > 2:
-            loadAllPlayerGold = sys.argv[2]
-    else: 
-        logging.info("Started : no params")
+    logging.info("Started :__")
+    for arg in sys.argv:
+        if arg == '-m':
+            logging.info("Started : Mannuel")
+        if arg == '-a':
+            logging.info("Started : Automatic")
+        if arg == '-ag':
+            logging.info("Started : All gold")
+            loadAllPlayerGold = "all"
+        if arg == '-cg':
+            logging.info("Started : All gold in clan")
+            loadAllPlayerGold = "inClan"
+        if arg == '-ng':
+            logging.info("Started : All gold in clan")
+            loadAllPlayerGold = "none"
     configPath = "\\".join(sys.argv[0].split("\\")[:-1])
     with open(configPath + '\config.json', 'r') as myfile:
         data=myfile.read()
@@ -43,12 +52,21 @@ try:
     file = configPath + '\\' + config['file']
     tags = config['tags']
 except:
-    if len(sys.argv) > 1:
-        logging.info("Started : {}".format(sys.argv[1]))
-        if len(sys.argv) > 2:
-            loadAllPlayerGold = sys.argv[2]
-    else: 
-        logging.info("Started : no params")
+    logging.info("Started :__")
+    for arg in sys.argv:
+        if arg == '-m':
+            logging.info("Started : Mannuel")
+        if arg == '-a':
+            logging.info("Started : Automatic")
+        if arg == '-ag':
+            logging.info("Started : All gold")
+            loadAllPlayerGold = "all"
+        if arg == '-cg':
+            logging.info("Started : All gold in clan")
+            loadAllPlayerGold = "inClan"
+        if arg == '-ng':
+            logging.info("Started : All gold in clan")
+            loadAllPlayerGold = "none"
     with open('config.json', 'r') as myfile:
         data=myfile.read()
     config = json.loads(data)

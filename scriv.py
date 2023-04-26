@@ -9,6 +9,10 @@ from openpyxl.utils import get_column_letter
 from openpyxl.styles.borders import Border, Side
 import logging
 from tqdm import tqdm
+from copy import copy
+import copy
+
+
 
 class Scriv():
     def saveFile(self, fileName):
@@ -42,7 +46,7 @@ class Scriv():
         self.outFlag = 0
         self.notAttackedFlag = 0
 
-        self.numFormat = u'#,###,###;'
+        self.numFormat = u'#,##0;-#,##0;;'
 
         self.thin_border = Border(top=Side(style='thin', color='454545'))
         self.topBorder = Border(top=Side(style='thick'))
@@ -400,7 +404,7 @@ class Scriv():
         rowMax = self.capital.max_row
         colMax = self.capital.max_column
 
-        state = raidData['items'][0]['state']
+        self.raidState = raidData['items'][0]['state']
         self.totalAttacks = raidData['items'][0]['totalAttacks']
         self.disctrictsDestroyed = raidData['items'][0]['enemyDistrictsDestroyed']
         if self.disctrictsDestroyed != 0:
@@ -431,10 +435,14 @@ class Scriv():
             self.raidGolds.append(self.capital.cell(2, c+1).value)
             self.medals.append(self.capital.cell(1, c+1).value)
 
+
+        self.inClan = copy.deepcopy(self.clanMembers)
+        self.outClan = []
         for r in range(4, rowMax+1):
             tag = self.capital.cell(r, self.tagPosR).value
 
             if not tag in self.clanMembers:
+                self.outClan.append(tag)
                 self.clanMembers[tag] = {}
                 self.clanMembers[tag]['tag'] = self.capital.cell(r, self.tagPosR).value
                 self.clanMembers[tag]['name'] = self.capital.cell(r, self.namePosR).value
@@ -452,7 +460,7 @@ class Scriv():
                         self.capital.cell(r, self.goldPosR).value
                     ]
             else:
-                if state == 'ended':
+                if self.raidState == 'ended':
                     flag = True
                     for m in raidData['items'][0]['members']:
                         if m['tag'] == tag:
@@ -508,18 +516,27 @@ class Scriv():
     def addPlayerTotalGold(self, drago, loadGold = "none"):
       
         print("Fetching player info for total contributions...")
-        r = 4
-        for tag in tqdm(self.clanMembers):
-            if(loadGold == "inClan" and self.clanMembers[tag]["status"] == "Out"):
-                continue
-            tago = tag.replace("#", "%23")
-            if loadGold == 'all' or loadGold == 'inClan':
+        
+        if loadGold == "none":
+            rowMax = self.capital.max_row
+            for r in range(4, rowMax):
+                self.clanMembers[self.capital.cell(r , self.tagPosR).value]['totalGold'] = self.capital.cell(r , self.playerTotal).value
+            for tag in self.clanMembers:
+                if not 'totalGold' in self.clanMembers[tag]:
+                    self.clanMembers[tag]['totalGold'] = -100
+        elif loadGold == "inClan":
+            for tag in tqdm(self.inClan):
+                tago = tag.replace("#", "%23")
                 player = drago.getPlayerInfo(tago)
                 totalGold = player[0]['clanCapitalContributions']
                 self.clanMembers[tag]['totalGold'] = totalGold
-            elif loadGold == "none":
-                self.clanMembers[self.capital.cell(r , self.tagPosR).value]['totalGold'] = self.capital.cell(r , self.playerTotal).value
-                r += 1
+        elif loadGold == "all":
+            for tag in tqdm(self.clanMembers):
+                tago = tag.replace("#", "%23")
+                player = drago.getPlayerInfo(tago)
+                totalGold = player[0]['clanCapitalContributions']
+                self.clanMembers[tag]['totalGold'] = totalGold
+        
         
 
 
@@ -664,12 +681,12 @@ class Scriv():
             self.writeCell(self.clanMembers[m], r, self.tagPosR, 'tag', self.capital, tag=True)
             self.writeCell(self.clanMembers[m], r, self.namePosR, 'name', self.capital)
             self.writeCell(self.clanMembers[m], r, self.trophiesPosR, 'trophies', self.capital)
-            points += self.writeCell(self.clanMembers[m], r, self.attacksPosR, 'attacks', self.capital, params=attackThreshold)
-            points += self.writeCell(self.clanMembers[m], r, self.goldPosR, 'capitalResourcesLooted', self.capital, params=goldThreshold)
-            self.writeCell(self.clanMembers[m], r, self.playerContrib, 'contrib', self.capital, params=playerTotalThreshold)
-            self.writeCell(self.clanMembers[m], r, self.playerTotal, 'totalGold', self.capital, params=playerTotalThreshold)
-            self.writeCell(self.clanMembers[m], r, self.donationPosR, 'donations', self.capital, params=donationsThreshold)
-            self.writeCell(self.clanMembers[m], r, self.donationRecievedR, 'donationsReceived', self.capital)
+            points += self.writeCell(self.clanMembers[m], r, self.attacksPosR, 'attacks', self.capital, params=attackThreshold, numFormat=True)
+            points += self.writeCell(self.clanMembers[m], r, self.goldPosR, 'capitalResourcesLooted', self.capital, params=goldThreshold, numFormat=True)
+            self.writeCell(self.clanMembers[m], r, self.playerContrib, 'contrib', self.capital, params=playerTotalThreshold, numFormat=True)
+            self.writeCell(self.clanMembers[m], r, self.playerTotal, 'totalGold', self.capital, params=playerTotalThreshold, numFormat=True)
+            self.writeCell(self.clanMembers[m], r, self.donationPosR, 'donations', self.capital, params=donationsThreshold, numFormat=True)
+            self.writeCell(self.clanMembers[m], r, self.donationRecievedR, 'donationsReceived', self.capital, numFormat=True)
             self.colorName(r, self.namePosR, points, totalThreshold, self.capital)
 
             if  self.outFlag == 1 or self.notAttackedFlag == 1:
@@ -716,18 +733,29 @@ class Scriv():
         try:
             t = (int)(self.capital.cell(1, self.totalGoldR).value)
             if t > self.medals[0]:
-                self.colorSet(self.green, self.green, 1, self.totalGoldR, self.capital)
+                self.colorSet(self.green, self.green, 1, self.totalGoldR, self.capital, numFormat=True)
             else:
-                self.colorSet(self.red, self.red, 1, self.totalGoldR, self.capital)
+                self.colorSet(self.red, self.red, 1, self.totalGoldR, self.capital, numFormat=True)
                 tick += 1
         except:
-            pass
+            if self.raidState == "ended":
+                try:
+                    medals = int(input("Enter raid medals reward for raid of {} (enter x to skip): ".format(self.raidTime)))
+                    # medals = medals
+                    self.capital.cell(1, self.totalGoldR).value = medals
+                    if medals > self.medals[0]:
+                        self.colorSet(self.green, self.green, 1, self.totalGoldR, self.capital, numFormat=True)
+                    else:
+                        self.colorSet(self.red, self.red, 1, self.totalGoldR, self.capital, numFormat=True)
+                        tick += 1
+                except:
+                    pass
 
         self.capital.cell(2, self.totalGoldR).value = self.totalGold
         if self.totalGold > self.raidGolds[0]:
-            self.colorSet(self.green, self.green, 2, self.totalGoldR, self.capital)
+            self.colorSet(self.green, self.green, 2, self.totalGoldR, self.capital, numFormat=True)
         else:
-            self.colorSet(self.red, self.red, 2, self.totalGoldR, self.capital)
+            self.colorSet(self.red, self.red, 2, self.totalGoldR, self.capital, numFormat=True)
             tick += 1
 
 
@@ -771,15 +799,15 @@ class Scriv():
                 tick += 1
 
             if self.raidGolds[i] > self.raidGolds[i+1]:
-                self.colorSet(self.green, self.green, 2, c+1, self.capital)
+                self.colorSet(self.green, self.green, 2, c+1, self.capital, numFormat=True)
             else:
-                self.colorSet(self.red, self.red, 2, c+1, self.capital)
+                self.colorSet(self.red, self.red, 2, c+1, self.capital, numFormat=True)
                 tick += 1
 
             if self.medals[i] > self.medals[i+1]:
-                self.colorSet(self.green, self.green, 1, c+1, self.capital)
+                self.colorSet(self.green, self.green, 1, c+1, self.capital, numFormat=True)
             else:
-                self.colorSet(self.red, self.red, 1, c+1, self.capital)
+                self.colorSet(self.red, self.red, 1, c+1, self.capital, numFormat=True)
                 tick += 1
 
             if tick < 2:
@@ -870,15 +898,15 @@ class Scriv():
             self.writeCell(self.clanMembers[m], r, self.tagPosW, 'tag', self.war, tag=True)
             self.writeCell(self.clanMembers[m], r, self.mapPositionW, 'mapPosition', self.war)
             self.writeCell(self.clanMembers[m], r, self.namePosW, 'name', self.war)
-            points += self.writeCell(self.clanMembers[m], r, self.attacksPosW, 'attackNumber', self.war, params=attackThreshold)
-            points += self.writeCell(self.clanMembers[m], r, self.starsPosW, 'stars', self.war, params=starsThreshold)
+            points += self.writeCell(self.clanMembers[m], r, self.attacksPosW, 'attackNumber', self.war, params=attackThreshold, numFormat=True)
+            points += self.writeCell(self.clanMembers[m], r, self.starsPosW, 'stars', self.war, params=starsThreshold, numFormat=True)
             self.colorName(r, self.namePosW, points, totalThrshold, self.war)
             self.war.cell(r, self.starsPosW).border = self.sideBorder
 
             for i, d in enumerate(self.warDates):
                 c = (((i+1)*2)+(self.repeatPosW-2))
-                self.writeCell(self.clanMembers[m], r,c, d, self.war, params=attackThreshold, dated = 0)
-                self.writeCell(self.clanMembers[m], r,c+1, d, self.war, params=starsThreshold, dated = 1)
+                self.writeCell(self.clanMembers[m], r,c, d, self.war, params=attackThreshold, dated = 0, numFormat=True)
+                self.writeCell(self.clanMembers[m], r,c+1, d, self.war, params=starsThreshold, dated = 1, numFormat=True)
                 self.war.cell(r, c+1).border = self.sideBorder
 
     def updateWarTimes(self):
@@ -897,7 +925,7 @@ class Scriv():
         elif not points == -1:
             self.colorSet(self.red, self.red2, r, c, sheet)
 
-    def writeCell(self, member, r, c, val, sheet, params=None, tag=False, dated=-1):
+    def writeCell(self, member, r, c, val, sheet, params=None, tag=False, dated=-1, numFormat = False):
         if member['tag'] in self.tags:
             # sheet.cell(r, c).border = thin_border
             sheet.cell(r, c).font = Font(bold=True)
@@ -923,41 +951,41 @@ class Scriv():
             else:
                 sheet.cell(r, c).font = Font(bold=False)
             if member['status'] == 'In':
-                self.colorSet(self.gray, self.gray2, r, c, sheet)
+                self.colorSet(self.gray, self.gray2, r, c, sheet, numFormat)
             else:
-                self.colorSet(self.red, self.red2, r, c, sheet)
+                self.colorSet(self.red, self.red2, r, c, sheet, numFormat)
         elif params == None:
             if val in member:
                 sheet.cell(r, c).value = member[val]
-                self.colorSet(self.gray, self.gray2, r, c, sheet)
+                self.colorSet(self.gray, self.gray2, r, c, sheet, numFormat)
         else:
             if not dated == -1:
                 sheet.cell(r, c).value = member[val][dated]
                 if member[val][dated] == None:
-                    self.colorSet(self.gray, self.gray2, r, c, sheet)
+                    self.colorSet(self.gray, self.gray2, r, c, sheet, numFormat)
                     return 
                 if member[val][dated] >= params[0]:
-                    self.colorSet(self.green, self.green2, r, c, sheet)
+                    self.colorSet(self.green, self.green2, r, c, sheet, numFormat)
                     return 3
                 elif member[val][dated] >= params[1]:
-                    self.colorSet(self.yellow, self.yellow2, r, c, sheet)
+                    self.colorSet(self.yellow, self.yellow2, r, c, sheet, numFormat)
                     return 2
                 else :
-                    self.colorSet(self.red, self.red2, r, c, sheet)
+                    self.colorSet(self.red, self.red2, r, c, sheet, numFormat)
                     return 1
             elif not member[val] == None and val in member: 
                 sheet.cell(r, c).value = member[val]
                 if member[val] >= params[0]:
-                    self.colorSet(self.green, self.green2, r, c, sheet)
+                    self.colorSet(self.green, self.green2, r, c, sheet, numFormat)
                     return 3
                 elif member[val] >= params[1]:
-                    self.colorSet(self.yellow, self.yellow2, r, c, sheet)
+                    self.colorSet(self.yellow, self.yellow2, r, c, sheet, numFormat)
                     return 2
                 else :
-                    self.colorSet(self.red, self.red2, r, c, sheet)
+                    self.colorSet(self.red, self.red2, r, c, sheet, numFormat)
                     return 1
             else: 
-                self.colorSet(self.gray, self.gray2, r, c, sheet)
+                self.colorSet(self.gray, self.gray2, r, c, sheet, numFormat)
                 sheet.cell(r, c).value = None
                 return 0
 
@@ -969,10 +997,10 @@ class Scriv():
                 elif(member[self.raidDates[0]][0] == None or member[self.raidDates[0]][0] == 0):
                     sheet.cell(r,c).border = self.bottomNSideBorder
 
-    def colorSet(self, color, color2, r, c, sheet, sameFormat = True):
+    def colorSet(self, color, color2, r, c, sheet, numFormat = False):
         if r % 2 == 0:
             sheet.cell(r, c).fill = color
         else:
             sheet.cell(r, c).fill = color2
-        if sameFormat:
+        if numFormat:
             sheet.cell(r, c).number_format  = self.numFormat

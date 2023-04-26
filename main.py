@@ -28,20 +28,20 @@ if len(sys.argv) > 1:
 loadAllPlayerGold = 'none'
 print("Start")
 try:
-    logging.info("Started :__")
+    logging.info("Started :-------------------------------------")
     for arg in sys.argv:
         if arg == '-m':
-            logging.info("Started : Mannuel")
+            logging.info("Param Loaded : Mannuel")
         if arg == '-a':
-            logging.info("Started : Automatic")
+            logging.info("Param Loaded : Automatic")
         if arg == '-ag':
-            logging.info("Started : All gold")
+            logging.info("Param Loaded : All gold")
             loadAllPlayerGold = "all"
         if arg == '-cg':
-            logging.info("Started : All gold in clan")
+            logging.info("Param Loaded : All gold in clan")
             loadAllPlayerGold = "inClan"
         if arg == '-ng':
-            logging.info("Started : All gold in clan")
+            logging.info("Param Loaded : No Gold")
             loadAllPlayerGold = "none"
     configPath = "\\".join(sys.argv[0].split("\\")[:-1])
     with open(configPath + '\config.json', 'r') as myfile:
@@ -52,20 +52,20 @@ try:
     file = configPath + '\\' + config['file']
     tags = config['tags']
 except:
-    logging.info("Started :__")
+    logging.info("Started :-------------------------------------")
     for arg in sys.argv:
         if arg == '-m':
-            logging.info("Started : Mannuel")
+            logging.info("Param Loaded : Mannuel")
         if arg == '-a':
-            logging.info("Started : Automatic")
+            logging.info("Param Loaded : Automatic")
         if arg == '-ag':
-            logging.info("Started : All gold")
+            logging.info("Param Loaded : All gold")
             loadAllPlayerGold = "all"
         if arg == '-cg':
-            logging.info("Started : All gold in clan")
+            logging.info("Param Loaded : All gold in clan")
             loadAllPlayerGold = "inClan"
         if arg == '-ng':
-            logging.info("Started : All gold in clan")
+            logging.info("Param Loaded : No Gold")
             loadAllPlayerGold = "none"
     with open('config.json', 'r') as myfile:
         data=myfile.read()

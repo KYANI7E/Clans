@@ -204,16 +204,25 @@ class Scriv():
             
             if not tag in self.clanMembers:
                 self.clanMembers[tag] = {}
-                if newInfo:
-                    attackCell = self.league.cell(r, self.attacksPosL).value
+                attackCell = self.league.cell(r, self.attacksPosL).value
+                if attackCell != None:
                     attackCell = attackCell.split("/")
                     attacks = attackCell[0]
                     maxAttacks = attackCell[1]
-                    self.clanMembers[tag][self.seasons[0]] = [
-                        attacks,
-                        maxAttacks,
-                        self.league.cell(r, self.starsPosL).value.split("/")[0]
-                    ]
+                else:
+                    attacks = None
+                    maxAttacks = None
+
+                if self.league.cell(r, self.starsPosL).value != None: 
+                    stars = self.league.cell(r, self.starsPosL).value.split("/")[0]
+                else:
+                    stars = None
+
+                self.clanMembers[tag][self.seasons[0]] = [
+                    attacks,
+                    maxAttacks,
+                    stars
+                ]
                 self.clanMembers[tag]['attacks'] = self.league.cell(r, self.namePosL).value
                 self.clanMembers[tag]['name'] = self.league.cell(r, self.namePosL).value
                 self.clanMembers[tag]['tag'] = self.league.cell(r, self.tagPosL).value
@@ -568,11 +577,15 @@ class Scriv():
     def writeLeagueAttackCell(self, member, r, c, val, sheet, params, dated = False):
         if 'maxAttacks' in member:
             if dated:
-                
-                a = int(member[val][0])
-                m = int(member[val][1])
-                vall = str(a) + "/" + str(m)
-                p = a / m
+                if not member[val][0] == None:
+                    a = int(member[val][0])
+                    m = int(member[val][1])
+                    vall = str(a) + "/" + str(m)
+                    p = a / m
+                else:
+                    self.colorSet(self.gray, self.gray2, r, c, sheet)
+                    sheet.cell(r, c).value = None
+                    return 0
             else:
                 a = member['LattackNumber']
                 m = member['maxAttacks']
@@ -589,6 +602,27 @@ class Scriv():
             else :
                 self.colorSet(self.red, self.red2, r, c, sheet)
                 return 1
+        elif dated:
+            if not member[val][0] == None:
+                a = int(member[val][0])
+                m = int(member[val][1])
+                vall = str(a) + "/" + str(m)
+                p = a / m
+                self.league.cell(r, c).alignment = Alignment(horizontal='center')
+                self.league.cell(r, c).value = vall
+                if p >= params[0]:
+                    self.colorSet(self.green, self.green2, r, c, sheet)
+                    return 3
+                elif p >= params[1]:
+                    self.colorSet(self.yellow, self.yellow2, r, c, sheet)
+                    return 2
+                else :
+                    self.colorSet(self.red, self.red2, r, c, sheet)
+                    return 1
+            else:
+                self.colorSet(self.gray, self.gray2, r, c, sheet)
+                sheet.cell(r, c).value = None
+                return 0
         else: 
             self.colorSet(self.gray, self.gray2, r, c, sheet)
             sheet.cell(r, c).value = None
@@ -598,13 +632,20 @@ class Scriv():
         if 'maxAttacks' in member:
             something  = True
             if dated:
-                vall = str(member[val][2]) + "/" + str(int(member[val][1])*3)
-                if member[val][0] == None:
-                    something =  True
+                if not member[val][0] == None:
+
+                    vall = str(member[val][2]) + "/" + str(int(member[val][1])*3)
+                    if member[val][0] == None:
+                        something =  True
+                    else:
+                        a = int(member[val][2])
+                        m = int(member[val][1])*3
+                        p = a / m
                 else:
-                    a = int(member[val][2])
-                    m = int(member[val][1])*3
-                    p = a / m
+                    self.colorSet(self.gray, self.gray2, r, c, sheet)
+                    sheet.cell(r, c).value = None
+                    return 0
+
             else:
                 vall = str(member['stars']) + "/" + str(member['maxAttacks']*3)
                 # if member[val][0] == None:
@@ -625,7 +666,32 @@ class Scriv():
                 else :
                     self.colorSet(self.red, self.red2, r, c, sheet)
                     return 1
-        
+        elif dated:
+            if not member[val][0] == None:
+
+                vall = str(member[val][2]) + "/" + str(int(member[val][1])*3)
+                if member[val][0] == None:
+                    something =  True
+                else:
+                    a = int(member[val][2])
+                    m = int(member[val][1])*3
+                    p = a / m
+                self.league.cell(r, c).value = vall
+                self.league.cell(r, c).alignment = Alignment(horizontal='center')
+                if p >= params[0]:
+                    self.colorSet(self.green, self.green2, r, c, sheet)
+                    return 3
+                elif p >= params[1]:
+                    self.colorSet(self.yellow, self.yellow2, r, c, sheet)
+                    return 2
+                else :
+                    self.colorSet(self.red, self.red2, r, c, sheet)
+                    return 1
+            else:
+                self.colorSet(self.gray, self.gray2, r, c, sheet)
+                sheet.cell(r, c).value = None
+                return 0
+
         self.colorSet(self.gray, self.gray2, r, c, sheet)
         sheet.cell(r, c).value = None
         return 0
@@ -709,8 +775,8 @@ class Scriv():
                 for g in range(1,4):
                     self.capital.cell(g, c+1).border = self.sideBorder
 
-                self.writeCell(self.clanMembers[m], r,c, d, self.capital, params=attackThreshold, dated = 0)
-                self.writeCell(self.clanMembers[m], r,c+1, d, self.capital, params=goldThreshold, dated = 1)
+                self.writeCell(self.clanMembers[m], r,c, d, self.capital, params=attackThreshold, dated = 0, numFormat=True)
+                self.writeCell(self.clanMembers[m], r,c+1, d, self.capital, params=goldThreshold, dated = 1, numFormat=True)
                 if  self.outFlag == 1 or self.notAttackedFlag == 1:
                     self.capital.cell(r, c+1).border = self.topNSideBorder
                 else:
@@ -841,26 +907,35 @@ class Scriv():
                         best = j
 
                 elif members[temp[best]]['capitalResourcesLooted'] == 0 and members[temp[j]]['capitalResourcesLooted'] == 0:
-                    for d in self.raidDates: 
-                        if members[temp[j]][d][1] == None and members[temp[best]][d][1] != None:
-                            best = j
-                            break
-                        elif members[temp[j]][d][1] == None:
-                            continue
-                        elif members[temp[best]][d][1] == None:
-                            # best = j
-                            continue
-                        elif members[temp[best]][d][1] == 0 and members[temp[j]][d][1] == 0:
-                            continue
-                        elif members[temp[best]][d][1] < members[temp[j]][d][1]:
-                            best = j
-                            break
-                        elif members[temp[best]][d][1] == members[temp[j]][d][1]:
-                            if members[temp[best]]['donations'] < members[temp[j]]['donations']:
+
+                    if members[temp[j]]['attacks'] != 0 or  members[temp[best]]['attacks'] != 0:
+                        if members[temp[best]]['attacks'] != 0:
+                            if members[temp[j]]['attacks'] > members[temp[best]]['attacks']:
                                 best = j
-                            break
-                        elif members[temp[best]][d][1] > members[temp[j]][d][1]:
-                            break
+                        else:
+                            best = j
+
+                    else:
+                        for d in self.raidDates: 
+                            if members[temp[j]][d][1] == None and members[temp[best]][d][1] != None:
+                                best = j
+                                break
+                            elif members[temp[j]][d][1] == None:
+                                continue
+                            elif members[temp[best]][d][1] == None:
+                                # best = j
+                                continue
+                            elif members[temp[best]][d][1] == 0 and members[temp[j]][d][1] == 0:
+                                continue
+                            elif members[temp[best]][d][1] < members[temp[j]][d][1]:
+                                best = j
+                                break
+                            elif members[temp[best]][d][1] == members[temp[j]][d][1]:
+                                if members[temp[best]]['donations'] < members[temp[j]]['donations']:
+                                    best = j
+                                break
+                            elif members[temp[best]][d][1] > members[temp[j]][d][1]:
+                                break
 
                 elif members[temp[best]]['capitalResourcesLooted'] < members[temp[j]]['capitalResourcesLooted']:
                     best = j

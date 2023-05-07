@@ -7,6 +7,7 @@ import json
 import sys
 import copy
 import logging
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename="clash.log", level=logging.INFO, format="%(asctime)s :: %(name)s :: %(message)s")
@@ -151,9 +152,9 @@ else:
 
         leagueWarsData = []
 
-        for rounds in leagueData['rounds']:
+        for rounds in tqdm(leagueData['rounds']):
             if rounds['warTags'][0] == '#0':
-                break
+                continue
             for warTags in rounds['warTags']:
                 (leagueWar, statusCodeL) = drago.getClanLeagueWarInfo(warTags.replace("#", "%23"))
                 if leagueWar['clan']['tag'] == clanTagS or leagueWar['opponent']['tag'] == clanTagS:

@@ -82,9 +82,6 @@ class Dragon:
                 return "Error {}".format(response.status_code)
     
     def getClanLeagueWarInfo(self, warTag):
-
-        print("Fetching league war info for " + warTag)
-
         api_endpoint = "https://api.clashofclans.com/v1/clanwarleagues/wars/"
         uri = warTag
 
